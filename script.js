@@ -76,18 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadHtmlBtn = document.getElementById('download-html-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
 
-
-    
-    const iconOptions = {
-        code: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
-        briefcase: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
-        pen: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`,
-        chart: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-        lightbulb: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.7 10.2 18 9 18 7c0-2.2-1.8-4-4-4S9.8 3.5 8.5 5.1"/><path d="M9 18c-1.3 0-2.5-.5-3.5-1.4C3.8 15 3 13.1 3 11c0-2.5 2-4.5 4.5-4.5"/><path d="M15 22v-4.5C15 15.4 13.9 14 12 14s-3 .3-3 3.5V22"/><path d="M12 14h0"/></svg>`,
-        target: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
-        "graduation-cap": `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.838l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12v5c0 3 2.5 5 5 5s5-2 5-5v-5"/></svg>`,
-        cog: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM12 2v2M12 22v-2M20 12h2M2 12h-2M19.78 4.22l-1.42 1.42M5.64 18.36l-1.42-1.42M19.78 19.78l-1.42-1.42M5.64 5.64L4.22 4.22"/></svg>`
-    };
+    let loadedIcons = [];
+    let svgCache = {};
     
     // --- 3. TEMPLATE & FORM FUNCTIONS ---
     let templates = {}; 
@@ -103,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const renderAvatarFormHTML = () => {
         const { type, value } = cvData.avatar || {type:'initials', value:''};
-        return `<div class="form-section" data-section="avatar"><h2 class="section-title">Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte.</p><div class="avatar-tabs"><div class="avatar-tab ${type==='none'?'active':''}" data-type="none">Nada</div><div class="avatar-tab ${type==='photo'?'active':''}" data-type="photo">Foto</div><div class="avatar-tab ${type==='url'?'active':''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type==='initials'?'active':''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type==='icon'?'active':''}" data-type="icon">Icono</div><div class="avatar-tab ${type==='svg'?'active':''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type==='quote'?'active':''}" data-type="quote">Cita</div><div class="avatar-tab ${type==='qr'?'active':''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type==='none'?'active':''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type==='photo'?'active':''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type==='photo'&&value?value:'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type==='photo'&&value?'<button id="remove-photo-btn" class="btn">Eliminar Foto</button>':''}</div></div></div><div class="avatar-content ${type==='url'?'active':''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type==='url'?value:''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type==='initials'?'active':''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type==='initials'?value:''}" placeholder="HD"></div></div><div class="avatar-content ${type==='icon'?'active':''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${Object.entries(iconOptions).map(([key,svg])=>`<div class="icon-option ${type==='icon' && value===svg ? 'active' : ''}" data-icon-key="${key}">${svg}</div>`).join('')}</div></div><div class="avatar-content ${type==='svg'?'active':''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type==='svg'?value:''}</textarea></div></div><div class="avatar-content ${type==='quote'?'active':''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type==='quote'?value:''}</textarea></div></div><div class="avatar-content ${type==='qr'?'active':''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type==='qr'?value:''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`;
+        return `<div class="form-section" data-section="avatar"><h2 class="section-title">Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte.</p><div class="avatar-tabs"><div class="avatar-tab ${type==='none'?'active':''}" data-type="none">Nada</div><div class="avatar-tab ${type==='photo'?'active':''}" data-type="photo">Foto</div><div class="avatar-tab ${type==='url'?'active':''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type==='initials'?'active':''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type==='icon'?'active':''}" data-type="icon">Icono</div><div class="avatar-tab ${type==='svg'?'active':''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type==='quote'?'active':''}" data-type="quote">Cita</div><div class="avatar-tab ${type==='qr'?'active':''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type==='none'?'active':''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type==='photo'?'active':''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type==='photo'&&value?value:'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type==='photo'&&value?'<button id="remove-photo-btn" class="btn">Eliminar Foto</button>':''}</div></div></div><div class="avatar-content ${type==='url'?'active':''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type==='url'?value:''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type==='initials'?'active':''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type==='initials'?value:''}" placeholder="HD"></div></div><div class="avatar-content ${type==='icon'?'active':''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${loadedIcons.map(iconPath =>`<div class="icon-option ${type==='icon' && value===iconPath ? 'active' : ''}" data-icon-path="${iconPath}"><img src="${iconPath}" alt="icon" style="width:36px; height:36px;"/></div>`).join('')}</div></div><div class="avatar-content ${type==='svg'?'active':''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type==='svg'?value:''}</textarea></div></div><div class="avatar-content ${type==='quote'?'active':''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type==='quote'?value:''}</textarea></div></div><div class="avatar-content ${type==='qr'?'active':''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type==='qr'?value:''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`;
     };
     const renderPersonalFormHTML = () => { const p=cvData.personalInfo; return `<div class="form-section" data-section="personal"><h2 class="section-title">Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName||''}"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName||''}"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title||''}"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email||''}"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone||''}"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address||''}"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website||''}"></div><div class="form-group"><label>Resumen</label><textarea name="summary" rows="5">${p.summary||''}</textarea></div></div>`; };
     const renderSkillsFormHTML = () => `<div class="form-section" data-section="skills"><h2 class="section-title">Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Python..."></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;">+ Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s=>`<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
@@ -151,7 +141,13 @@ document.addEventListener('DOMContentLoaded', () => {
             switch (avatar.type) {
                 case 'photo': case 'url': return `<img src="${avatar.value}" style="width:100%; height:100%; object-fit:cover;">`;
                 case 'initials': return `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background-color:rgba(0,0,0,0.2); font-size:3rem; font-weight:bold; color: white;">${avatar.value || templateHelpers.getInitials(data.personalInfo)}</div>`;
-                case 'icon': case 'svg': return `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background-color:rgba(0,0,0,0.2); padding: 20px; color: white;">${avatar.value || ''}</div>`;
+                case 'icon':
+                    if (avatar.value && svgCache && svgCache[avatar.value]) {
+                        // Inserta el SVG directamente y aplica el color blanco con 'fill'.
+                        return `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background-color:rgba(0,0,0,0.2); padding: 20px; color: white;">${svgCache[avatar.value].replace('<svg', '<svg style="width:100%; height:100%; fill: #fff;"')}</div>`;
+                    }
+                    return `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background-color:rgba(0,0,0,0.2); padding: 20px; color: white;">...</div>`;
+                case 'svg': return `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background-color:rgba(0,0,0,0.2); padding: 20px; color: white;">${avatar.value || ''}</div>`;
                 case 'quote': return `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding: 1rem; text-align:center; background-color:rgba(0,0,0,0.1); color:white; font-family: var(--font-serif); font-style:italic;">“${avatar.value || 'Tu cita profesional aquí...'}”</div>`;
                 case 'qr':
                     const qrUrl = avatar.value ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(avatar.value)}` : 'https://via.placeholder.com/150/ffffff/cccccc?text=QR';
@@ -249,6 +245,33 @@ document.addEventListener('DOMContentLoaded', () => {
             // Podríamos tener una plantilla de respaldo o mostrar un error
         }
     };
+
+    const loadIcons = async () => {
+        try {
+            const [iconListResponse, cacheResponse] = await Promise.all([
+                fetch('icon.json'),
+                fetch('svg-cache.json')
+            ]);
+            const iconNames = await iconListResponse.json();
+            svgCache = await cacheResponse.json();
+
+            loadedIcons = iconNames.map(name => `icon-svg/${name}.svg`);
+
+            // Cargar SVGs que no están en la caché
+            const iconsToFetch = loadedIcons.filter(path => !svgCache[path]);
+            const fetchPromises = iconsToFetch.map(async (path) => {
+                const svgResponse = await fetch(path);
+                const svgText = await svgResponse.text();
+                svgCache[path] = svgText;
+            });
+            await Promise.all(fetchPromises);
+        } catch (error) {
+            console.error("Error al cargar los iconos:", error);
+            loadedIcons = [];
+            svgCache = {};
+        }
+    };
+
 
     // --- NUEVA FUNCIÓN PARA CARGAR GRADIENTES ---
     const loadGradientPresets = async () => {
@@ -578,8 +601,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const actionHandlers = {
             add: () => handleAddItem(section),
             delete: () => { cvData[section] = cvData[section].filter(i => i.id != button.dataset.id); },
-            switchTab: () => { cvData.avatar.type = button.dataset.type; },
-            selectIcon: () => { cvData.avatar = { type: 'icon', value: iconOptions[button.dataset.iconKey] }; },
+            switchTab: () => { 
+                cvData.avatar.type = button.dataset.type; 
+                if (button.dataset.type === 'icon' && loadedIcons.length > 0) {
+                    cvData.avatar.value = loadedIcons[0]; // Selecciona el primer ícono por defecto
+                }
+            },
+            selectIcon: () => { cvData.avatar = { type: 'icon', value: button.dataset.iconPath }; },
             removePhoto: () => { cvData.avatar = { type: 'photo', value: '' }; },
             selectLayout: () => { cvData.layout = button.dataset.layout; },
             selectColor: () => { cvData.themeColor = button.dataset.colorValue; },
@@ -639,7 +667,8 @@ document.addEventListener('DOMContentLoaded', () => {
     async function init() {
         await Promise.all([
             loadTemplates(),
-            loadGradientPresets()
+            loadGradientPresets(),
+            loadIcons()
         ]);
 
         downloadPdfBtn.addEventListener('click', () => window.print());
