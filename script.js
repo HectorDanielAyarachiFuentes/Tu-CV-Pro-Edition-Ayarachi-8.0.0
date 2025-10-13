@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 2. DOM ELEMENTS & CONFIG ---
     const formWrapper = document.getElementById('form-section-wrapper');
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
+    const downloadHtmlBtn = document.getElementById('download-html-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
 
 
@@ -92,6 +93,29 @@ document.addEventListener('DOMContentLoaded', () => {
     let templates = {}; 
     const formRenderers = {};
     
+    // --- 3a. FORM RENDERER HELPERS ---
+    // Funciones que generan el HTML para cada sección del formulario.
+    // Esto hace que la función `buildFormRenderers` sea más limpia.
+    const renderWelcomeFormHTML = () => `<div class="form-section" data-section="welcome"><h2 class="section-title">¡Bienvenido al Generador de CV Pro!</h2><p class="section-subtitle">Sigue estos sencillos pasos para crear tu currículum profesional.</p><div style="margin-top:2rem; display:flex; flex-direction:column; gap:1.5rem;"><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">1</div><div><h3 style="margin:0 0 0.2rem 0;">Personaliza el Diseño</h3><p style="color:var(--color-muted-text);">Ve a la sección "Diseño" para elegir una plantilla y tu color favorito.</p></div></div><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">2</div><div><h3 style="margin:0 0 0.2rem 0;">Completa las Secciones</h3><p style="color:var(--color-muted-text);">Usa la navegación para rellenar tu avatar, experiencia, educación y habilidades.</p></div></div><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">3</div><div><h3 style="margin:0 0 0.2rem 0;">Descarga y Triunfa</h3><p style="color:var(--color-muted-text);">Cuando estés listo, presiona "Descargar PDF" para obtener tu CV profesional.</p></div></div></div></div>`;
+    const renderDesignFormHTML = () => {
+        const hexColor = cvData.themeColor.startsWith('#') ? cvData.themeColor : '#dc3545';
+        return `<div class="form-section" data-section="design"><h2 class="section-title">Diseño y Apariencia</h2><p class="section-subtitle">Personaliza cómo se ve tu currículum.</p><div class="design-tabs"><div class="design-tab active" data-tab="templates">Plantillas</div><div class="design-tab" data-tab="colors">Colores</div><div class="design-tab" data-tab="backgrounds">Fondos</div></div><div class="design-content active" data-content="templates"><div class="layout-selector">${Object.keys(templates).map(layout => `<div class="layout-card ${cvData.layout === layout ? 'active' : ''}" data-layout="${layout}"><div class="mini-preview-container"></div><p style="text-transform: capitalize;">${layout.replace('_', ' ')}</p></div>`).join('')}</div></div><div class="design-content" data-content="colors"><div class="subsection-title" style="margin-top:0;">Color de Acento</div><div class="colors"><div class="color-dot ${cvData.themeColor==='#0d6efd'?'active':''}" data-color-value="#0d6efd" style="background:#0d6efd"></div><div class="color-dot ${cvData.themeColor==='#198754'?'active':''}" data-color-value="#198754" style="background:#198754"></div><div class="color-dot ${cvData.themeColor==='#6f42c1'?'active':''}" data-color-value="#6f42c1" style="background:#6f42c1"></div><div class="color-dot ${cvData.themeColor==='#dc3545'?'active':''}" data-color-value="#dc3545" style="background:#dc3545"></div><div class="color-dot ${cvData.themeColor==='#525f7f'?'active':''}" data-color-value="#525f7f" style="background:#525f7f"></div><div class="color-dot ${cvData.themeColor==='#e83e8c'?'active':''}" data-color-value="#e83e8c" style="background:#e83e8c"></div><input type="color" id="custom-color-picker" value="${hexColor}"></div><div class="subsection-title-flex"><div class="subsection-title">Colores del Texto</div><button id="reset-colors-btn" class="btn btn-sm" title="Restablecer colores por defecto"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Restablecer</button></div><div class="text-color-pickers"><div class="form-group"><label for="text-color-dark">Texto Principal</label><input type="color" id="text-color-dark" data-color-type="textColorDark" value="${cvData.textColorDark}"></div><div class="form-group"><label for="text-color-light">Texto Claro</label><input type="color" id="text-color-light" data-color-type="textColorLight" value="${cvData.textColorLight}"></div><div class="form-group"><label for="text-color-muted">Texto Tenue</label><input type="color" id="text-color-muted" data-color-type="textColorMuted" value="${cvData.textColorMuted}"></div></div><div class="subsection-title">Paletas Predeterminadas</div><div class="palette-selector">${colorPalettes.map((p, index) => `<div class="palette-swatch" data-palette-index="${index}" title="${p.name}"><div style="background-color:${p.accent}"></div><div style="background-color:${p.dark}"></div><div style="background-color:${p.light}; border:1px solid #ddd;"></div><div style="background-color:${p.muted}"></div></div>`).join('')}</div></div><div class="design-content" data-content="backgrounds"><div class="gradient-tabs"><div class="gradient-tab active" data-tab="raya">Rayados (${loadedGradients.raya.length})</div><div class="gradient-tab" data-tab="simple">Gradientes (${loadedGradients.simple.length})</div></div><div class="gradient-content active" data-content="raya"><div class="gradient-selector">${loadedGradients.raya.map(grad => `<div class="gradient-swatch ${cvData.backgroundGradient === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div><div class="gradient-content" data-content="simple"><div class="gradient-selector">${loadedGradients.simple.map(grad => `<div class="gradient-swatch ${cvData.backgroundGradient === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div><div class="form-group" style="margin-top: 1.5rem;"><label for="background-gradient-input">Fondo Personalizado</label><p style="color:var(--color-muted-text); margin-bottom: 0.5rem; font-size: 0.85rem;">Pega un gradiente de <a href="https://www.gradientmagic.com/" target="_blank">Gradient Magic</a> o pídele uno nuevo a ChatGPT.</p><textarea id="background-gradient-input" rows="3" placeholder="Pega el código CSS de un 'linear-gradient' o 'radial-gradient' aquí...">${cvData.backgroundGradient || ''}</textarea></div></div></div>`;
+    };
+    const renderAvatarFormHTML = () => {
+        const { type, value } = cvData.avatar || {type:'initials', value:''};
+        return `<div class="form-section" data-section="avatar"><h2 class="section-title">Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte.</p><div class="avatar-tabs"><div class="avatar-tab ${type==='none'?'active':''}" data-type="none">Nada</div><div class="avatar-tab ${type==='photo'?'active':''}" data-type="photo">Foto</div><div class="avatar-tab ${type==='url'?'active':''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type==='initials'?'active':''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type==='icon'?'active':''}" data-type="icon">Icono</div><div class="avatar-tab ${type==='svg'?'active':''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type==='quote'?'active':''}" data-type="quote">Cita</div><div class="avatar-tab ${type==='qr'?'active':''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type==='none'?'active':''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type==='photo'?'active':''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type==='photo'&&value?value:'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type==='photo'&&value?'<button id="remove-photo-btn" class="btn">Eliminar Foto</button>':''}</div></div></div><div class="avatar-content ${type==='url'?'active':''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type==='url'?value:''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type==='initials'?'active':''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type==='initials'?value:''}" placeholder="HD"></div></div><div class="avatar-content ${type==='icon'?'active':''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${Object.entries(iconOptions).map(([key,svg])=>`<div class="icon-option ${type==='icon' && value===svg ? 'active' : ''}" data-icon-key="${key}">${svg}</div>`).join('')}</div></div><div class="avatar-content ${type==='svg'?'active':''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type==='svg'?value:''}</textarea></div></div><div class="avatar-content ${type==='quote'?'active':''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type==='quote'?value:''}</textarea></div></div><div class="avatar-content ${type==='qr'?'active':''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type==='qr'?value:''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`;
+    };
+    const renderPersonalFormHTML = () => { const p=cvData.personalInfo; return `<div class="form-section" data-section="personal"><h2 class="section-title">Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName||''}"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName||''}"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title||''}"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email||''}"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone||''}"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address||''}"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website||''}"></div><div class="form-group"><label>Resumen</label><textarea name="summary" rows="5">${p.summary||''}</textarea></div></div>`; };
+    const renderSkillsFormHTML = () => `<div class="form-section" data-section="skills"><h2 class="section-title">Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Python..."></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;">+ Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s=>`<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
+    const renderDynamicListFormHTML = (section, config) => `<div class="form-section" data-section="${section}"><h2 class="section-title">${config.title}</h2><p class="section-subtitle">${config.subtitle}</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="${section}">+ Añadir ${config.singularTitle}</button></div><div class="dynamic-list">${(cvData[section] || []).map(item=>`<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.position||item.degree||'Nuevo Elemento'}</h4><button class="btn-delete" data-action="delete" data-section="${section}" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-grid"><div class="form-group"><label>${config.field1}</label><input type="text" name="${config.name1}" value="${item[config.name1]||''}"></div><div class="form-group"><label>${config.field2}</label><input type="text" name="${config.name2}" value="${item[config.name2]||''}"></div></div><div class="form-grid"><div class="form-group"><label>Fecha Inicio</label><input type="month" name="startDate" value="${item.startDate||''}"></div><div class="form-group"><label>Fecha Fin</label><input type="month" name="endDate" value="${item.endDate||''}" ${item.current?'disabled':''}></div></div><div class="form-group" style="font-size:.9rem;"><label style="display:flex;align-items:center;gap:.5rem;"><input type="checkbox" name="current" ${item.current?'checked':''}> Actualmente aquí</label></div><div class="form-group"><label>Descripción</label><textarea name="description" rows="4">${item.description||''}</textarea></div></div>`).join('')}</div></div>`;
+    const renderImpactsFormHTML = () => `<div class="form-section" data-section="impacts"><h2 class="section-title">Impacto Clave</h2><p class="section-subtitle">Añade tus logros más importantes y cuantificables.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="impacts">+ Añadir Logro</button></div><div class="dynamic-list">${(cvData.impacts || []).map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>Logro Clave</h4><button class="btn-delete" data-action="delete" data-section="impacts" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-group"><label>Descripción del logro</label><textarea name="description" rows="3">${item.description || ''}</textarea></div></div>`).join('')}</div></div>`;
+    const renderPortfolioFormHTML = () => `<div class="form-section" data-section="portfolio"><h2 class="section-title">Portafolio</h2><p class="section-subtitle">Muestra tus mejores trabajos visuales.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="portfolio">+ Añadir Proyecto</button></div><div class="dynamic-list">${cvData.portfolio.map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.title || 'Nuevo Proyecto'}</h4><button class="btn-delete" data-action="delete" data-section="portfolio" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div style="display: flex; gap: 1rem; align-items: flex-start;"><img src="${item.img || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);" class="portfolio-preview"><div style="flex-grow: 1;"><div class="form-group"><label>Título del Proyecto</label><input type="text" name="title" value="${item.title || ''}"></div><div class="form-group" style="margin-bottom:0;"><label>URL de la Imagen</label><input type="text" name="img" value="${item.img || ''}" placeholder="https://ejemplo.com/imagen.png"></div></div></div></div>`).join('')}</div></div>`;
+    const renderFooterFormHTML = () => `<div class="form-section" data-section="footer"><h2 class="section-title">Pie de Página</h2><p class="section-subtitle">Añade enlaces o texto final.</p><form id="footer-form" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;"><div class="form-grid"><div class="form-group" style="margin:0;"><label for="footer-item-type">Tipo</label><select id="footer-item-type">${Object.keys(templateHelpers.footerIcons).map(k => `<option value="${k}">${k.charAt(0).toUpperCase() + k.slice(1)}</option>`).join('')}</select></div><div class="form-group" style="margin:0;"><label for="footer-item-label">Etiqueta (opcional)</label><input id="footer-item-label" placeholder="LinkedIn"></div></div><div class="form-group" style="margin:0;"><label for="footer-item-value">Valor</label><input id="footer-item-value" placeholder="tu-usuario"></div><button type="button" class="btn btn-secondary" data-action="add" data-section="footer" style="align-self: flex-start;">+ Añadir Elemento</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="footer-list" style="display:flex;flex-direction:column; gap:0.5rem;">${cvData.footer.map(f=>`<div class="footer-item" style="background:#f8f9fa; border:1px solid #eee;" data-id="${f.id}"> ${templateHelpers.footerIcons[f.type]} <span>${f.label||''}</span> <p>${f.value}</p> <button class="btn-delete" style="margin-left:auto;" data-action="delete" data-section="footer" data-id="${f.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
+    const renderStructureFormHTML = () => {
+        const sectionLabels = { summary: 'Resumen', experience: 'Experiencia', education: 'Educación', skills: 'Habilidades', impacts: 'Impacto Clave', portfolio: 'Portafolio' };
+        return `<div class="form-section" data-section="structure"><h2 class="section-title">Organizar Secciones</h2><p class="section-subtitle">Arrastra y suelta las secciones para cambiar su orden en el CV.</p><div id="section-order-list">${cvData.sectionOrder.map(sectionKey => `<div class="draggable-item" draggable="true" data-section-key="${sectionKey}"><svg class="drag-handle" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg><span>${sectionLabels[sectionKey]}</span></div>`).join('')}</div></div>`;
+    };
+
     // --- HELPERS PARA PLANTILLAS ---
     // Agrupamos las funciones auxiliares para pasarlas a las plantillas
     const templateHelpers = {
@@ -190,97 +214,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    const buildTemplateAndFormFunctions = () => {
-        // Esta función ahora solo construye los renderizadores de formularios.
-        // Las funciones de plantilla se manejan en `templateHelpers`.
-        formRenderers.welcome = () => renderForm(`<div class="form-section" data-section="welcome"><h2 class="section-title">¡Bienvenido al Generador de CV Pro!</h2><p class="section-subtitle">Sigue estos sencillos pasos para crear tu currículum profesional.</p><div style="margin-top:2rem; display:flex; flex-direction:column; gap:1.5rem;"><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">1</div><div><h3 style="margin:0 0 0.2rem 0;">Personaliza el Diseño</h3><p style="color:var(--color-muted-text);">Ve a la sección "Diseño" para elegir una plantilla y tu color favorito.</p></div></div><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">2</div><div><h3 style="margin:0 0 0.2rem 0;">Completa las Secciones</h3><p style="color:var(--color-muted-text);">Usa la navegación para rellenar tu avatar, experiencia, educación y habilidades.</p></div></div><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">3</div><div><h3 style="margin:0 0 0.2rem 0;">Descarga y Triunfa</h3><p style="color:var(--color-muted-text);">Cuando estés listo, presiona "Descargar PDF" para obtener tu CV profesional.</p></div></div></div></div>`);
-
-        formRenderers.design = () => { 
-            const hexColor = cvData.themeColor.startsWith('#') ? cvData.themeColor : '#dc3545';
-            renderForm(`<div class="form-section" data-section="design">
-                <h2 class="section-title">Diseño y Apariencia</h2>
-                <p class="section-subtitle">Personaliza cómo se ve tu currículum.</p>
-
-                <div class="design-tabs">
-                    <div class="design-tab active" data-tab="templates">Plantillas</div>
-                    <div class="design-tab" data-tab="colors">Colores</div>
-                    <div class="design-tab" data-tab="backgrounds">Fondos</div>
-                </div>
-
-                <div class="design-content active" data-content="templates">
-                    <div class="layout-selector">
-                        ${Object.keys(templates).map(layout => `
-                            <div class="layout-card ${cvData.layout === layout ? 'active' : ''}" data-layout="${layout}">
-                                <div class="mini-preview-container"></div>
-                                <p style="text-transform: capitalize;">${layout.replace('_', ' ')}</p>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-
-                <div class="design-content" data-content="colors">
-                    <div class="subsection-title" style="margin-top:0;">Color de Acento</div>
-                    <div class="colors">
-                        <div class="color-dot ${cvData.themeColor==='#0d6efd'?'active':''}" data-color-value="#0d6efd" style="background:#0d6efd"></div>
-                        <div class="color-dot ${cvData.themeColor==='#198754'?'active':''}" data-color-value="#198754" style="background:#198754"></div>
-                        <div class="color-dot ${cvData.themeColor==='#6f42c1'?'active':''}" data-color-value="#6f42c1" style="background:#6f42c1"></div>
-                        <div class="color-dot ${cvData.themeColor==='#dc3545'?'active':''}" data-color-value="#dc3545" style="background:#dc3545"></div>
-                        <div class="color-dot ${cvData.themeColor==='#525f7f'?'active':''}" data-color-value="#525f7f" style="background:#525f7f"></div>
-                        <div class="color-dot ${cvData.themeColor==='#e83e8c'?'active':''}" data-color-value="#e83e8c" style="background:#e83e8c"></div>
-                        <input type="color" id="custom-color-picker" value="${hexColor}">
-                    </div>
-                    <div class="subsection-title-flex">
-                        <div class="subsection-title">Colores del Texto</div>
-                        <button id="reset-colors-btn" class="btn btn-sm" title="Restablecer colores por defecto">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                            Restablecer
-                        </button>
-                    </div>
-                    <div class="text-color-pickers">
-                        <div class="form-group"><label for="text-color-dark">Texto Principal</label><input type="color" id="text-color-dark" data-color-type="textColorDark" value="${cvData.textColorDark}"></div>
-                        <div class="form-group"><label for="text-color-light">Texto Claro</label><input type="color" id="text-color-light" data-color-type="textColorLight" value="${cvData.textColorLight}"></div>
-                        <div class="form-group"><label for="text-color-muted">Texto Tenue</label><input type="color" id="text-color-muted" data-color-type="textColorMuted" value="${cvData.textColorMuted}"></div>
-                    </div>
-                    <div class="subsection-title">Paletas Predeterminadas</div>
-                    <div class="palette-selector">
-                        ${colorPalettes.map((p, index) => `
-                            <div class="palette-swatch" data-palette-index="${index}" title="${p.name}">
-                                <div style="background-color:${p.accent}"></div><div style="background-color:${p.dark}"></div><div style="background-color:${p.light}; border:1px solid #ddd;"></div><div style="background-color:${p.muted}"></div>
-                            </div>`).join('')}
-                    </div>
-                </div>
-
-                <div class="design-content" data-content="backgrounds">
-                    <div class="gradient-tabs">
-                        <div class="gradient-tab active" data-tab="raya">Rayados (${loadedGradients.raya.length})</div>
-                        <div class="gradient-tab" data-tab="simple">Gradientes (${loadedGradients.simple.length})</div>
-                    </div>
-                    <div class="gradient-content active" data-content="raya"><div class="gradient-selector">${loadedGradients.raya.map(grad => `<div class="gradient-swatch ${cvData.backgroundGradient === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div>
-                    <div class="gradient-content" data-content="simple"><div class="gradient-selector">${loadedGradients.simple.map(grad => `<div class="gradient-swatch ${cvData.backgroundGradient === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div>
-                    <div class="form-group" style="margin-top: 1.5rem;">
-                        <label for="background-gradient-input">Fondo Personalizado</label>
-                        <p style="color:var(--color-muted-text); margin-bottom: 0.5rem; font-size: 0.85rem;">Pega un gradiente de <a href="https://www.gradientmagic.com/" target="_blank">Gradient Magic</a> o pídele uno nuevo a ChatGPT.</p>
-                        <textarea id="background-gradient-input" rows="3" placeholder="Pega el código CSS de un 'linear-gradient' o 'radial-gradient' aquí...">${cvData.backgroundGradient || ''}</textarea>
-                    </div>
-                </div>
-            </div>`);
-        };
-        formRenderers.avatar = () => {
-            const { type, value } = cvData.avatar || {type:'initials', value:''};
-            renderForm(`<div class="form-section" data-section="avatar"><h2 class="section-title">Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte.</p><div class="avatar-tabs"><div class="avatar-tab ${type==='none'?'active':''}" data-type="none">Nada</div><div class="avatar-tab ${type==='photo'?'active':''}" data-type="photo">Foto</div><div class="avatar-tab ${type==='url'?'active':''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type==='initials'?'active':''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type==='icon'?'active':''}" data-type="icon">Icono</div><div class="avatar-tab ${type==='svg'?'active':''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type==='quote'?'active':''}" data-type="quote">Cita</div><div class="avatar-tab ${type==='qr'?'active':''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type==='none'?'active':''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type==='photo'?'active':''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type==='photo'&&value?value:'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type==='photo'&&value?'<button id="remove-photo-btn" class="btn">Eliminar Foto</button>':''}</div></div></div><div class="avatar-content ${type==='url'?'active':''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type==='url'?value:''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type==='initials'?'active':''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type==='initials'?value:''}" placeholder="HD"></div></div><div class="avatar-content ${type==='icon'?'active':''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${Object.entries(iconOptions).map(([key,svg])=>`<div class="icon-option ${type==='icon' && value===svg ? 'active' : ''}" data-icon-key="${key}">${svg}</div>`).join('')}</div></div><div class="avatar-content ${type==='svg'?'active':''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type==='svg'?value:''}</textarea></div></div><div class="avatar-content ${type==='quote'?'active':''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type==='quote'?value:''}</textarea></div></div><div class="avatar-content ${type==='qr'?'active':''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type==='qr'?value:''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`);
-        };
-        formRenderers.personal = () => {const p=cvData.personalInfo;renderForm(`<div class="form-section" data-section="personal"><h2 class="section-title">Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName||''}"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName||''}"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title||''}"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email||''}"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone||''}"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address||''}"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website||''}"></div><div class="form-group"><label>Resumen</label><textarea name="summary" rows="5">${p.summary||''}</textarea></div></div>`)};
-        formRenderers.skills = () => {renderForm(`<div class="form-section" data-section="skills"><h2 class="section-title">Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Python..."></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;">+ Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s=>`<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`)};
-        const dynamicListRenderer = (section, config) => {renderForm(`<div class="form-section" data-section="${section}"><h2 class="section-title">${config.title}</h2><p class="section-subtitle">${config.subtitle}</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="${section}">+ Añadir ${config.singularTitle}</button></div><div class="dynamic-list">${(cvData[section] || []).map(item=>`<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.position||item.degree||'Nuevo Elemento'}</h4><button class="btn-delete" data-action="delete" data-section="${section}" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-grid"><div class="form-group"><label>${config.field1}</label><input type="text" name="${config.name1}" value="${item[config.name1]||''}"></div><div class="form-group"><label>${config.field2}</label><input type="text" name="${config.name2}" value="${item[config.name2]||''}"></div></div><div class="form-grid"><div class="form-group"><label>Fecha Inicio</label><input type="month" name="startDate" value="${item.startDate||''}"></div><div class="form-group"><label>Fecha Fin</label><input type="month" name="endDate" value="${item.endDate||''}" ${item.current?'disabled':''}></div></div><div class="form-group" style="font-size:.9rem;"><label style="display:flex;align-items:center;gap:.5rem;"><input type="checkbox" name="current" ${item.current?'checked':''}> Actualmente aquí</label></div><div class="form-group"><label>Descripción</label><textarea name="description" rows="4">${item.description||''}</textarea></div></div>`).join('')}</div></div>`);}
-        formRenderers.experience = () => dynamicListRenderer('experience', {title:'Experiencia Laboral', singularTitle: 'Experiencia', subtitle:'Describe tus roles anteriores.', field1:'Cargo', name1:'position', field2:'Empresa', name2:'company'});
-        formRenderers.education = () => dynamicListRenderer('education', {title:'Educación', singularTitle: 'Formación', subtitle:'Tu formación académica.', field1:'Título', name1:'degree', field2:'Institución', name2:'institution'});
-        formRenderers.footer = () => {renderForm(`<div class="form-section" data-section="footer"><h2 class="section-title">Pie de Página</h2><p class="section-subtitle">Añade enlaces o texto final.</p><form id="footer-form" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;"><div class="form-grid"><div class="form-group" style="margin:0;"><label for="footer-item-type">Tipo</label><select id="footer-item-type">${Object.keys(footerIcons).map(k => `<option value="${k}">${k.charAt(0).toUpperCase() + k.slice(1)}</option>`).join('')}</select></div><div class="form-group" style="margin:0;"><label for="footer-item-label">Etiqueta (opcional)</label><input id="footer-item-label" placeholder="LinkedIn"></div></div><div class="form-group" style="margin:0;"><label for="footer-item-value">Valor</label><input id="footer-item-value" placeholder="tu-usuario"></div><button type="button" class="btn btn-secondary" data-action="add" data-section="footer" style="align-self: flex-start;">+ Añadir Elemento</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="footer-list" style="display:flex;flex-direction:column; gap:0.5rem;">${cvData.footer.map(f=>`<div class="footer-item" style="background:#f8f9fa; border:1px solid #eee;" data-id="${f.id}"> ${footerIcons[f.type]} <span>${f.label||''}</span> <p>${f.value}</p> <button class="btn-delete" style="margin-left:auto;" data-action="delete" data-section="footer" data-id="${f.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`)};
-        formRenderers.impacts = () => {renderForm(`<div class="form-section" data-section="impacts"><h2 class="section-title">Impacto Clave</h2><p class="section-subtitle">Añade tus logros más importantes y cuantificables.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="impacts">+ Añadir Logro</button></div><div class="dynamic-list">${(cvData.impacts || []).map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>Logro Clave</h4><button class="btn-delete" data-action="delete" data-section="impacts" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-group"><label>Descripción del logro</label><textarea name="description" rows="3">${item.description || ''}</textarea></div></div>`).join('')}</div></div>`);};
-        formRenderers.portfolio = () => {renderForm(`<div class="form-section" data-section="portfolio"><h2 class="section-title">Portafolio</h2><p class="section-subtitle">Muestra tus mejores trabajos visuales.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="portfolio">+ Añadir Proyecto</button></div><div class="dynamic-list">${cvData.portfolio.map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.title || 'Nuevo Proyecto'}</h4><button class="btn-delete" data-action="delete" data-section="portfolio" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div style="display: flex; gap: 1rem; align-items: flex-start;"><img src="${item.img || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);" class="portfolio-preview"><div style="flex-grow: 1;"><div class="form-group"><label>Título del Proyecto</label><input type="text" name="title" value="${item.title || ''}"></div><div class="form-group" style="margin-bottom:0;"><label>URL de la Imagen</label><input type="text" name="img" value="${item.img || ''}" placeholder="https://ejemplo.com/imagen.png"></div></div></div></div>`).join('')}</div></div>`);};
-        formRenderers.structure = () => {
-            const sectionLabels = { summary: 'Resumen', experience: 'Experiencia', education: 'Educación', skills: 'Habilidades', impacts: 'Impacto Clave', portfolio: 'Portafolio' };
-            renderForm(`<div class="form-section" data-section="structure"><h2 class="section-title">Organizar Secciones</h2><p class="section-subtitle">Arrastra y suelta las secciones para cambiar su orden en el CV.</p><div id="section-order-list">${cvData.sectionOrder.map(sectionKey => `<div class="draggable-item" draggable="true" data-section-key="${sectionKey}"><svg class="drag-handle" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg><span>${sectionLabels[sectionKey]}</span></div>`).join('')}</div></div>`);
-        };
+    const buildFormRenderers = () => {
+        formRenderers.welcome = () => renderForm(renderWelcomeFormHTML());
+        formRenderers.design = () => renderForm(renderDesignFormHTML());
+        formRenderers.avatar = () => renderForm(renderAvatarFormHTML());
+        formRenderers.personal = () => renderForm(renderPersonalFormHTML());
+        formRenderers.skills = () => renderForm(renderSkillsFormHTML());
+        formRenderers.experience = () => renderForm(renderDynamicListFormHTML('experience', {title:'Experiencia Laboral', singularTitle: 'Experiencia', subtitle:'Describe tus roles anteriores.', field1:'Cargo', name1:'position', field2:'Empresa', name2:'company'}));
+        formRenderers.education = () => renderForm(renderDynamicListFormHTML('education', {title:'Educación', singularTitle: 'Formación', subtitle:'Tu formación académica.', field1:'Título', name1:'degree', field2:'Institución', name2:'institution'}));
+        formRenderers.impacts = () => renderForm(renderImpactsFormHTML());
+        formRenderers.portfolio = () => renderForm(renderPortfolioFormHTML());
+        formRenderers.footer = () => renderForm(renderFooterFormHTML());
+        formRenderers.structure = () => renderForm(renderStructureFormHTML());
     };
 
     // --- NUEVA FUNCIÓN PARA CARGAR PLANTILLAS ---
@@ -297,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Construimos las funciones del formulario DESPUÉS de cargar las plantillas
-            buildTemplateAndFormFunctions();
+            buildFormRenderers();
 
         } catch (error) {
             console.error("Error al cargar las plantillas de CV:", error);
@@ -411,6 +356,285 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // --- NUEVA FUNCIÓN PARA DESCARGAR HTML ---
+    const downloadHtml = async () => {
+        try {
+            // 1. Obtener el CSS de la hoja de estilos principal
+            const cssResponse = await fetch('style.css');
+            let cssText = await cssResponse.text();
+
+            // 2. Obtener el CSS de las fuentes de Google
+            const fontUrl = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@400;600&family=Source+Code+Pro:wght@400;600&display=swap";
+            const fontCssResponse = await fetch(fontUrl);
+            const fontCssText = await fontCssResponse.text();
+
+            // 3. Combinar todo el CSS
+            const fullCss = fontCssText + '\n' + cssText;
+
+            // 4. Obtener el HTML del CV
+            const cvHtml = cvPreviewWrapper.innerHTML;
+
+            // 5. Añadir CSS para la responsividad del archivo HTML
+            const responsiveAndPrintCss = `
+                /* Solución: Anula el overflow:hidden del body para permitir el scroll */
+                body {
+                    overflow: auto !important;
+                }
+
+                /* Estilos base para el contenedor del CV */
+                .cv-container {
+                    width: 100%;
+                    max-width: 900px; /* Ancho cómodo para escritorio */
+                    margin: 2rem auto;
+                    background-color: white;
+                    /* Corrección para permitir el crecimiento y el scroll */
+                    height: auto; 
+                    min-height: 297mm; /* Mantiene una altura mínima de A4 */
+                    display: block !important; /* Sobrescribe display:grid del wrapper original */
+                    aspect-ratio: unset !important; /* Anula la relación de aspecto fija */
+                    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+                    border-radius: 0.5rem;
+                }
+                /* Botón de descarga flotante */
+                .download-floater {
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background-color: var(--primary-accent, #dc3545);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 60px;
+                    height: 60px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: transform 0.2s ease;
+                    z-index: 1000;
+                }
+                .download-floater:hover { transform: scale(1.1); }
+
+                /* Media Query para pantallas pequeñas (móviles) */
+                @media (max-width: 768px) {
+                    body { padding: 0; }
+                    .cv-container {
+                        margin: 0;
+                        box-shadow: none;
+                        border-radius: 0;
+                        min-height: 100vh;
+                    }
+                }
+
+                /* Estilos de impresión para formato A4 */
+                @media print {
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: none !important; padding: 0; margin: 0; }
+                    .download-floater { display: none !important; }
+                    .cv-container {
+                        width: 210mm;
+                        height: 297mm;
+                        margin: 0;
+                        padding: 0;
+                        box-shadow: none !important;
+                        border-radius: 0 !important;
+                        max-width: none !important;
+                        min-height: unset;
+                }
+                /* 
+                * ¡IMPORTANTE! Anula la altura fija de las plantillas.
+                * Esto permite que el contenido crezca y el scroll funcione.
+                */
+                #cv-template {
+                    height: auto !important;
+                    }
+                }
+            `;
+
+            // 6. Crear el documento HTML completo
+            const fullHtml = `<!DOCTYPE html>
+<html lang="es" style="--primary-accent: ${cvData.themeColor};">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV de ${templateHelpers.getFullName(cvData.personalInfo)}</title>
+    <style>${fullCss}\n${responsiveAndPrintCss}</style>
+</head>
+<body style="background-color: #e9ecef; margin: 0;">
+    <div class="cv-container">${cvHtml}</div>
+    
+    <button class="download-floater" onclick="selfDownload()" title="Descargar este archivo HTML">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+
+    <script>
+        function selfDownload() {
+            // Clona el documento para no modificar el original
+            const docClone = document.cloneNode(true);
+            // Elimina el botón y el script del clon para que no aparezcan en el archivo descargado
+            docClone.querySelector('.download-floater').remove();
+            docClone.querySelector('script').remove();
+            
+            const htmlContent = docClone.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = document.title.replace(/ /g, '_') + '.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>`;
+            // 7. Crear y disparar la descarga
+            const blob = new Blob([fullHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CV_${cvData.personalInfo.lastName || 'Pro'}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error al generar el archivo HTML:", error);
+            alert("Hubo un error al intentar generar el archivo HTML. Por favor, revisa la consola para más detalles.");
+        }
+    };
+
+    // --- 4a. EVENT HANDLERS (REFACTORIZADO) ---
+
+    // Manejadores para el evento 'input'
+    const handleFormInput = (e) => {
+        const { target } = e;
+        const section = target.closest('.form-section')?.dataset.section;
+        if (!section) return;
+
+        const inputHandlers = {
+            personal: () => { cvData.personalInfo[target.name] = target.value; },
+            experience: () => handleDynamicListInput(target, 'experience'),
+            education: () => handleDynamicListInput(target, 'education'),
+            impacts: () => handleDynamicListInput(target, 'impacts'),
+            portfolio: () => handleDynamicListInput(target, 'portfolio'),
+            design: () => {
+                if (target.id === 'custom-color-picker') cvData.themeColor = target.value;
+                else if (target.dataset.colorType) cvData[target.dataset.colorType] = target.value;
+            },
+            avatar: () => {
+                const handler = {
+                    'initials-input': () => cvData.avatar = { type: 'initials', value: target.value.toUpperCase() },
+                    'image-url-input': () => cvData.avatar = { type: 'url', value: target.value },
+                    'svg-code-input': () => cvData.avatar = { type: 'svg', value: target.value },
+                    'quote-input': () => cvData.avatar = { type: 'quote', value: target.value },
+                    'qr-url-input': () => cvData.avatar = { type: 'qr', value: target.value },
+                }[target.id];
+                handler?.();
+            },
+            'background-gradient-input': () => {
+                cvData.backgroundGradient = target.value;
+                document.querySelectorAll('.gradient-swatch.active').forEach(swatch => swatch.classList.remove('active'));
+            }
+        };
+
+        (inputHandlers[section] || inputHandlers[target.id])?.();
+        renderCVPreview();
+    };
+
+    const handleDynamicListInput = (target, section) => {
+        const itemEl = target.closest('.item');
+        if (!itemEl) return;
+        const itemId = itemEl.dataset.id;
+        const item = cvData[section].find(i => i.id == itemId);
+        if (item) {
+            item[target.name] = target.type === 'checkbox' ? target.checked : target.value;
+            if (target.name === 'current') {
+                const endDateInput = itemEl.querySelector('input[name="endDate"]');
+                if (endDateInput) endDateInput.disabled = target.checked;
+                if (target.checked) item.endDate = '';
+            }
+            if (section === 'portfolio') {
+                if (target.name === 'img') {
+                    const previewImg = itemEl.querySelector('.portfolio-preview');
+                    previewImg.src = target.value || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista';
+                }
+                if (target.name === 'title') {
+                    itemEl.querySelector('.item-header h4').textContent = target.value || 'Nuevo Proyecto';
+                }
+            }
+        }
+    };
+
+    // Manejadores para el evento 'click'
+    const handleFormClick = (e) => {
+        const button = e.target.closest('button, .avatar-tab, .icon-option, .layout-card, .color-dot, .gradient-swatch, .gradient-tab, .design-tab, .palette-swatch');
+        if (!button) return;
+
+        const section = button.dataset.section || button.closest('.form-section')?.dataset.section;
+        const action = getActionFromElement(button);
+
+        const actionHandlers = {
+            add: () => handleAddItem(section),
+            delete: () => { cvData[section] = cvData[section].filter(i => i.id != button.dataset.id); },
+            switchTab: () => { cvData.avatar.type = button.dataset.type; },
+            selectIcon: () => { cvData.avatar = { type: 'icon', value: iconOptions[button.dataset.iconKey] }; },
+            removePhoto: () => { cvData.avatar = { type: 'photo', value: '' }; },
+            selectLayout: () => { cvData.layout = button.dataset.layout; },
+            selectColor: () => { cvData.themeColor = button.dataset.colorValue; },
+            selectPalette: () => Object.assign(cvData, colorPalettes[button.dataset.paletteIndex]),
+            resetColors: () => Object.assign(cvData, colorPalettes[0]),
+            selectGradient: () => { cvData.backgroundGradient = button.dataset.gradientValue; },
+            switchGradientTab: () => switchTab(button, '.gradient-tab', '.gradient-content'),
+            switchDesignTab: () => switchTab(button, '.design-tab', '.design-content'),
+        };
+
+        if (actionHandlers[action]) {
+            actionHandlers[action]();
+            if (section) setActiveSection(section);
+            renderCVPreview();
+        }
+    };
+
+    const getActionFromElement = (el) => {
+        if (el.dataset.action) return el.dataset.action;
+        const classMap = { 'avatar-tab': 'switchTab', 'icon-option': 'selectIcon', 'layout-card': 'selectLayout', 'color-dot': 'selectColor', 'gradient-swatch': 'selectGradient', 'gradient-tab': 'switchGradientTab', 'design-tab': 'switchDesignTab', 'palette-swatch': 'selectPalette' };
+        for (const className in classMap) {
+            if (el.classList.contains(className)) return classMap[className];
+        }
+        if (el.id === 'reset-colors-btn') return 'resetColors';
+        if (el.id === 'remove-photo-btn') return 'removePhoto';
+        return null;
+    };
+
+    const handleAddItem = (section) => {
+        if (section === 'footer') {
+            const typeInput = document.getElementById('footer-item-type');
+            const labelInput = document.getElementById('footer-item-label');
+            const valueInput = document.getElementById('footer-item-value');
+            if (valueInput.value.trim()) {
+                cvData.footer.push({ id: Date.now(), type: typeInput.value, label: labelInput.value.trim(), value: valueInput.value.trim() });
+                labelInput.value = ''; valueInput.value = '';
+            }
+            return;
+        }
+        const newItem = {
+            impacts: { id: Date.now(), description: '' },
+            portfolio: { id: Date.now(), title: 'Nuevo Proyecto', img: '' },
+            experience: { id: Date.now(), description: '' },
+            education: { id: Date.now(), description: '' },
+        }[section] || { id: Date.now() };
+        
+        if (cvData[section]) cvData[section].push(newItem);
+    };
+
+    const switchTab = (tabElement, tabSelector, contentSelector) => {
+        const tabName = tabElement.dataset.tab;
+        document.querySelectorAll(tabSelector).forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+        document.querySelectorAll(contentSelector).forEach(c => c.classList.toggle('active', c.dataset.content === tabName));
+    };
+
     // --- 5. INITIALIZATION & EVENT LISTENERS ---
     async function init() {
         await Promise.all([
@@ -419,6 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ]);
 
         downloadPdfBtn.addEventListener('click', () => window.print());
+        downloadHtmlBtn.addEventListener('click', downloadHtml);
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -426,140 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-
-
-        formWrapper.addEventListener('input', (e) => {
-            const { target } = e; 
-            const section = target.closest('.form-section')?.dataset.section; 
-            if (!section) return;
-
-            if (section === 'personal') {
-                cvData.personalInfo[target.name] = target.value;
-            } else if (['experience', 'education', 'impacts', 'portfolio'].includes(section)) {
-                const itemEl = target.closest('.item');
-                if(!itemEl) return;
-                const itemId = itemEl.dataset.id;
-                const item = cvData[section].find(i => i.id == itemId);
-                if (item) {
-                    item[target.name] = target.type === 'checkbox' ? target.checked : target.value;
-                    if (target.name === 'current') {
-                        const endDateInput = itemEl.querySelector('input[name="endDate"]');
-                        if (endDateInput) endDateInput.disabled = target.checked;
-                        if (target.checked) item.endDate = '';
-                    }
-                    if (section === 'portfolio') {
-                         if(target.name === 'img') {
-                            const previewImg = itemEl.querySelector('.portfolio-preview');
-                            previewImg.src = target.value || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista';
-                        }
-                         if(target.name === 'title') {
-                            itemEl.querySelector('.item-header h4').textContent = target.value || 'Nuevo Proyecto';
-                        }
-                    }
-                }
-            } else if (target.id === 'background-gradient-input') {
-                cvData.backgroundGradient = target.value;
-                document.querySelectorAll('.gradient-swatch.active').forEach(swatch => swatch.classList.remove('active'));
-            } else if (section === 'design' && target.id === 'custom-color-picker') {
-                cvData.themeColor = target.value;
-            } else if (section === 'design' && target.dataset.colorType) {
-                const colorType = target.dataset.colorType;
-                cvData[colorType] = target.value;
-            } else if (section === 'avatar') {
-                if (target.id === 'initials-input') cvData.avatar = { type: 'initials', value: target.value.toUpperCase() };
-                if (target.id === 'image-url-input') cvData.avatar = { type: 'url', value: target.value };
-                if (target.id === 'svg-code-input') cvData.avatar = { type: 'svg', value: target.value };
-                if (target.id === 'quote-input') cvData.avatar = { type: 'quote', value: target.value };
-                if (target.id === 'qr-url-input') cvData.avatar = { type: 'qr', value: target.value };
-            }
-            renderCVPreview();
-        });
-
-        formWrapper.addEventListener('click', (e) => {
-            const button = e.target.closest('button, .avatar-tab, .icon-option, .layout-card, .color-dot, .gradient-swatch, .gradient-tab, .design-tab, .palette-swatch');
-            if (!button) return;
-
-            const section = button.dataset.section || button.closest('.form-section')?.dataset.section;
-            let action = button.dataset.action || 
-                           (button.classList.contains('avatar-tab') && 'switchTab') || 
-                           (button.classList.contains('icon-option') && 'selectIcon') || 
-                           (button.id === 'reset-colors-btn' && 'resetColors') ||
-                           (button.id === 'remove-photo-btn' && 'removePhoto') || 
-                           (button.classList.contains('layout-card') && 'selectLayout') || 
-                           (button.classList.contains('color-dot') && 'selectColor') ||
-                           (button.classList.contains('gradient-swatch') && 'selectGradient');
-            
-            if (!action) {
-                if (button.classList.contains('gradient-tab')) action = 'switchGradientTab';
-                else if (button.classList.contains('design-tab')) action = 'switchDesignTab';
-                else if (button.classList.contains('palette-swatch')) action = 'selectPalette';
-            }
-
-            if (action) {
-                 if (section === 'footer' && action === 'add') {
-                    const typeInput = document.getElementById('footer-item-type');
-                    const labelInput = document.getElementById('footer-item-label');
-                    const valueInput = document.getElementById('footer-item-value');
-                    if (valueInput.value.trim()) {
-                        cvData.footer.push({ id: Date.now(), type: typeInput.value, label: labelInput.value.trim(), value: valueInput.value.trim() });
-                        labelInput.value = ''; valueInput.value = '';
-                    }
-                } else if (action === 'add') {
-                    let newItem;
-                    if (section === 'impacts') newItem = { id: Date.now(), description: '' };
-                    else if (section === 'portfolio') newItem = { id: Date.now(), title: 'Nuevo Proyecto', img: '' };
-                    else if (['experience', 'education'].includes(section)) newItem = { id: Date.now(), description: '' };
-                    else newItem = { id: Date.now() };
-                    
-                    if(cvData[section]) cvData[section].push(newItem);
-                } else if (action === 'delete') {
-                    if(cvData[section]) cvData[section] = cvData[section].filter(i => i.id != button.dataset.id);
-                } else if (action === 'switchTab') {
-                    const newType = button.dataset.type;
-                    if (cvData.avatar.type !== newType) { 
-                        cvData.avatar.type = newType;
-                        if (!['url', 'initials', 'svg', 'quote', 'qr'].includes(newType)) {
-                           cvData.avatar.value = cvData.avatar.value || '';
-                        }
-                    }
-                } else if (action === 'selectIcon') {
-                    cvData.avatar = { type: 'icon', value: iconOptions[button.dataset.iconKey] };
-                } else if (action === 'removePhoto') {
-                    cvData.avatar = { type: 'photo', value: '' };
-                } else if (action === 'selectLayout') {
-                    cvData.layout = button.dataset.layout;
-                } else if (action === 'selectColor') {
-                    cvData.themeColor = button.dataset.colorValue;
-                } else if (action === 'selectPalette') {
-                    const palette = colorPalettes[button.dataset.paletteIndex];
-                    if (palette) {
-                        cvData.themeColor = palette.accent;
-                        cvData.textColorDark = palette.dark;
-                        cvData.textColorLight = palette.light;
-                        cvData.textColorMuted = palette.muted;
-                    }
-                } else if (action === 'resetColors') {
-                    const defaultPalette = colorPalettes[0];
-                    cvData.themeColor = defaultPalette.accent; cvData.textColorDark = defaultPalette.dark; cvData.textColorLight = defaultPalette.light; cvData.textColorMuted = defaultPalette.muted;
-                } else if (action === 'selectGradient') {
-                    cvData.backgroundGradient = button.dataset.gradientValue;
-                } else if (action === 'switchGradientTab') {
-                    const tabName = button.dataset.tab;
-                    document.querySelectorAll('.gradient-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
-                    document.querySelectorAll('.gradient-content').forEach(c => c.classList.toggle('active', c.dataset.content === tabName));
-                    // No es necesario renderizar el CV aquí, solo cambiar de pestaña
-                    return; 
-                } else if (action === 'switchDesignTab') {
-                    const tabName = button.dataset.tab;
-                    document.querySelectorAll('.design-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
-                    document.querySelectorAll('.design-content').forEach(c => c.classList.toggle('active', c.dataset.content === tabName));
-                    return; 
-                }
-                
-                if(section) setActiveSection(section);
-                renderCVPreview();
-            }
-        });
+        // --- Event Listeners Refactorizados ---
+        formWrapper.addEventListener('input', handleFormInput);
+        formWrapper.addEventListener('click', handleFormClick);
 
         formWrapper.addEventListener('submit', (e) => {
             if (e.target.id === 'skills-form') {
