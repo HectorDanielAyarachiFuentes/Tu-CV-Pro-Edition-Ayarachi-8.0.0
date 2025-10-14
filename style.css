@@ -369,8 +369,6 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
 [data-editor-theme="dark"] .background-target-selector:hover { background-color: #343a40; }
 [data-editor-theme="dark"] .gradient-preview { background-color: #343a40; border-color: #495057; }
 [data-editor-theme="dark"] .btn-icon:hover { background-color: #343a40; }
-[data-editor-theme="dark"] .theme-icon-sun { display: block; }
-[data-editor-theme="dark"] .theme-icon-moon { display: none; }
 [data-editor-theme="dark"] .skill-badge { background-color: #343a40; border-color: #495057; }
 [data-editor-theme="dark"] .btn-delete:hover { color: var(--color-destructive); background-color: color-mix(in srgb, var(--color-destructive) 25%, transparent); }
 [data-editor-theme="dark"] .layout-card { background: #343a40; border-color: #495057; }
@@ -410,8 +408,8 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
     width: 14px;
     height: 14px;
 }
-.theme-icon-sun { opacity: 0; }
-.theme-icon-moon { opacity: 1; }
+.theme-icon-sun { opacity: 1; }
+.theme-icon-moon { opacity: 0; }
 
 [data-editor-theme="dark"] .theme-toggle-track {
     background-color: var(--primary-accent);
@@ -420,11 +418,16 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
     transform: translateX(24px);
 }
 [data-editor-theme="dark"] .theme-icon-sun {
-    opacity: 1;
-}
-[data-editor-theme="dark"] .theme-icon-moon {
     opacity: 0;
 }
+[data-editor-theme="dark"] .theme-icon-moon {
+    opacity: 1;
+}
+/* Solución: Invierte el color del SVG de la luna en modo oscuro para que sea visible */
+[data-editor-theme="dark"] .theme-icon-moon {
+    filter: invert(1);
+}
+
 
 
 
