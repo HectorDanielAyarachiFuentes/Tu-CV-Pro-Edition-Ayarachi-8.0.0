@@ -86,7 +86,7 @@ input[type="color"]::-webkit-color-swatch { border: 2px solid var(--color-border
 
 .layout-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; }
 .layout-card { border: 3px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; transition: border-color 0.2s; padding: 0.5rem; background: var(--color-light-bg); display: flex; flex-direction: column; }
-.layout-card:hover { border-color: color-mix(in srgb, var(--primary-accent) 50%, transparent); }
+.layout-card:hover { border-color: var(--primary-accent); opacity: 0.8; }
 .layout-card.active { border-color: var(--primary-accent); }
 .layout-card p { flex-shrink: 0; text-align: center; font-weight: 500; margin-top: 0.5rem; font-size: 0.9rem; }
 
@@ -129,7 +129,7 @@ input[type="color"]::-webkit-color-swatch { border: 2px solid var(--color-border
 .form-group label { display: block; font-weight: 500; margin-bottom: 0.3rem; }
 .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.7rem; font-size: 14px; font-family: var(--font-body); border: 1px solid var(--color-border); border-radius: var(--radius-md); background-color: var(--color-light-bg); transition: border-color 0.2s, box-shadow 0.2s; }
 .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-accent) 25%, transparent); }
-
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-accent); box-shadow: 0 0 0 2px var(--color-light-bg-alt); }
 .avatar-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
 .avatar-tab { padding: 0.5rem 1rem; border-radius: var(--radius-md); cursor: pointer; background-color: var(--color-light-bg-alt); font-weight: 500; font-size: 0.85rem;}
 .avatar-tab.active { background-color: var(--primary-accent); color: white; }
@@ -153,7 +153,7 @@ input[type="color"]::-webkit-color-swatch { border: 2px solid var(--color-border
     border: 2px solid transparent; transition: all 0.2s ease;
 }
 .icon-option:hover { background-color: var(--color-light-bg-alt); }
-.icon-option.active { border-color: var(--primary-accent); background-color: color-mix(in srgb, var(--primary-accent) 20%, transparent); }
+.icon-option.active { border-color: var(--primary-accent); background-color: var(--color-light-bg-alt); }
 
 .skills-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .skill-badge { display: inline-flex; align-items: center; background-color: var(--color-light-bg-alt); border: 1px solid var(--color-border); padding: 0.4rem 0.8rem; border-radius: var(--radius-md); font-weight: 500; }

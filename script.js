@@ -620,7 +620,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (actionHandlers[action]) {
             actionHandlers[action]();
-            if (section) setActiveSection(section);
+
+            // Un cambio de pestaña es solo una modificación de la UI; no se debe volver a renderizar todo el formulario.
+            const isTabSwitchAction = action.toLowerCase().includes('tab');
+
+            // Solo se vuelve a renderizar el formulario si la acción NO fue un cambio de pestaña (ej. para 'delete').
+            if (section && !isTabSwitchAction) {
+                setActiveSection(section);
+            }
+
             renderCVPreview();
         }
     };
@@ -658,9 +666,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const switchTab = (tabElement, tabSelector, contentSelector) => {
+        const parent = tabElement.closest('.form-section, .design-content');
+        if (!parent) return;
+
         const tabName = tabElement.dataset.tab;
-        document.querySelectorAll(tabSelector).forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
-        document.querySelectorAll(contentSelector).forEach(c => c.classList.toggle('active', c.dataset.content === tabName));
+
+        parent.querySelectorAll(tabSelector).forEach(tab => {
+            tab.classList.remove('active');
+        });
+        tabElement.classList.add('active');
+
+        parent.querySelectorAll(contentSelector).forEach(content => content.classList.remove('active'));
+        parent.querySelector(`${contentSelector}[data-content="${tabName}"]`)?.classList.add('active');
     };
 
     // --- 5. INITIALIZATION & EVENT LISTENERS ---
