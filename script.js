@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const downloadHtmlBtn = document.getElementById('download-html-btn');
     const resetCvBtn = document.getElementById('reset-cv-btn');
+    const shareCvBtn = document.getElementById('share-cv-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
     const saveNotificationEl = document.getElementById('save-notification');
 
@@ -570,6 +571,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const handleShareClick = () => {
+        try {
+            const jsonString = JSON.stringify(cvData);
+            // Comprimimos y codificamos los datos para hacer la URL más corta y robusta
+            const base64String = btoa(jsonString);
+            const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodeURIComponent(base64String)}`;
+
+            // Copiamos al portapapeles
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('¡Enlace para compartir copiado al portapapeles!');
+            }).catch(err => {
+                console.error('Error al copiar al portapapeles: ', err);
+                alert('No se pudo copiar el enlace. Puedes copiarlo manualmente desde la barra de direcciones.');
+                window.prompt("Copia este enlace:", shareUrl);
+            });
+        } catch (error) {
+            console.error("Error al crear el enlace para compartir:", error);
+            alert("No se pudo generar el enlace para compartir.");
+        }
+    };
+
     // --- 4a. EVENT HANDLERS (REFACTORIZADO) ---
 
     // Manejadores para el evento 'input'
@@ -743,14 +765,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 5. INITIALIZATION & EVENT LISTENERS ---
     async function init() {
-        loadState(); // Cargar datos guardados al inicio
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedData = urlParams.get('data');
+
+        if (sharedData) {
+            try {
+                const jsonString = atob(decodeURIComponent(sharedData));
+                const parsedData = JSON.parse(jsonString);
+                Object.assign(cvData, parsedData);
+                
+                // Activar modo solo lectura
+                document.body.classList.add('read-only-mode');
+            } catch (error) {
+                console.error("Error al decodificar los datos compartidos:", error);
+                alert("El enlace para compartir parece estar dañado. Cargando la versión por defecto.");
+                loadState(); // Cargar desde localStorage si los datos compartidos fallan
+            }
+        } else {
+            loadState(); // Cargar datos guardados si no hay datos compartidos
+        }
 
         await Promise.all([
             loadTemplates(),
             loadGradientPresets(),
             loadIcons()
         ]);
-
         const handleDownloadPdf = () => {
             // Guarda el título original del documento
             const originalTitle = document.title;
@@ -769,6 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         downloadPdfBtn.addEventListener('click', handleDownloadPdf);
         downloadHtmlBtn.addEventListener('click', downloadHtml);
+        shareCvBtn.addEventListener('click', handleShareClick);
         resetCvBtn.addEventListener('click', resetCvData);
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => {
             item.addEventListener('click', (e) => {

@@ -224,3 +224,10 @@ input[type="color"]::-webkit-color-swatch { border: 2px solid var(--color-border
     opacity: 1;
     visibility: visible;
 }
+
+/* --- Modo Solo Lectura (para compartir) --- */
+.read-only-mode .editor-panel { display: none; }
+.read-only-mode .cv-builder-container { grid-template-columns: 1fr; }
+.read-only-mode .preview-header { justify-content: flex-end; }
+.read-only-mode #share-cv-btn, .read-only-mode #reset-cv-btn { display: none; }
+}
