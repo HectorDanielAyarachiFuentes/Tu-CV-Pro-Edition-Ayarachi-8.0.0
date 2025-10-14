@@ -30,7 +30,8 @@
 body {
     font-family: var(--font-body); background-color: var(--color-light-bg); background-image: linear-gradient(to top right, #f8f9fa, #e9ecef);
     color: var(--color-dark-text); font-size: 14px; line-height: 1.6;
-    overflow: hidden;
+    overflow: hidden; 
+    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* --- Layout Principal --- */
@@ -40,7 +41,7 @@ body {
     height: 100vh; 
     transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.editor-panel { display: flex; flex-direction: column; height: 100vh; background-color: var(--color-white); border-right: 1px solid var(--color-border); position: relative; }
+.editor-panel { display: flex; flex-direction: column; height: 100vh; background-color: var(--color-white); border-right: 1px solid var(--color-border); position: relative; transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease; }
 .editor-header { padding: 2rem; flex-shrink: 0; border-bottom: 1px solid var(--color-border); }
 .main-title { display: flex; align-items: center; gap: 0.75rem; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); margin-right: auto; }
 .editor-header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
@@ -50,12 +51,14 @@ body {
 .editor-footer {
     padding: 1rem 2rem;
     flex-shrink: 0;
-    border-top: 1px solid var(--color-border);
-    text-align: center;
+    border-top: 1px solid var(--color-border);    
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 0.85rem;
     color: var(--color-muted-text);
 }
-.editor-footer a { color: var(--primary-accent); text-decoration: none; font-weight: 500; }
+.footer-credits a { color: var(--primary-accent); text-decoration: none; font-weight: 500; }
 .editor-content-area { display: flex; flex-grow: 1; overflow: hidden; }
 .editor-nav { display: flex; flex-direction: column; gap: 0.5rem; flex-shrink: 0; width: 70px; padding: 1.5rem 0; align-items: center; border-right: 1px solid var(--color-border); }
 .nav-item { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; text-decoration: none; color: var(--color-muted-text); border-radius: var(--radius-md); transition: background-color 0.2s, color 0.2s; position: relative; }
@@ -97,9 +100,6 @@ body {
 .btn-secondary:hover { background-color: var(--color-light-bg); }
 .btn-destructive { background-color: var(--color-destructive); color: var(--color-white); border: 1px solid var(--color-destructive); }
 .btn-icon { padding: 0.5rem; background: transparent; border: none; }
-.btn-icon:hover { background-color: var(--color-light-bg-alt); }
-.theme-icon-sun { display: none; }
-.theme-icon-moon { display: block; }
 .icon-compress { display: none; }
 
 body.fullscreen-preview .icon-expand { display: none; }
@@ -336,12 +336,10 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
 [data-editor-theme="dark"] .subsection-title-flex,
 [data-editor-theme="dark"] .design-tabs,
 [data-editor-theme="dark"] .gradient-tabs {
-    border-color: #495057;
+    border-color: #495057; transition: border-color 0.4s ease;
 }
 [data-editor-theme="dark"] .subsection-description,
-[data-editor-theme="dark"] .color-picker-description {
-    color: #adb5bd;
-}
+[data-editor-theme="dark"] .color-picker-description { color: #adb5bd; }
 [data-editor-theme="dark"] .editor-header p,
 [data-editor-theme="dark"] .section-subtitle,
 [data-editor-theme="dark"] .nav-item,
@@ -362,16 +360,13 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
 [data-editor-theme="dark"] .draggable-item,
 [data-editor-theme="dark"] .icon-selector {
     background-color: #343a40;
-    color: #f8f9fa;
-    border-color: #495057;
+    color: #f8f9fa; border-color: #495057;
 }
 [data-editor-theme="dark"] .text-color-picker:hover {
     background-color: #343a40;
     border-color: #495057;
 }
-[data-editor-theme="dark"] .background-target-selector:hover {
-    background-color: #343a40;
-}
+[data-editor-theme="dark"] .background-target-selector:hover { background-color: #343a40; }
 [data-editor-theme="dark"] .gradient-preview { background-color: #343a40; border-color: #495057; }
 [data-editor-theme="dark"] .btn-icon:hover { background-color: #343a40; }
 [data-editor-theme="dark"] .theme-icon-sun { display: block; }
@@ -384,8 +379,58 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
     border-color: #495057;
     color: #f8f9fa;
 }
-[data-editor-theme="dark"] .editor-footer { border-top-color: #495057; color: #adb5bd; }
+[data-editor-theme="dark"] .editor-footer { border-top-color: #495057; color: #adb5bd; transition: border-color 0.4s ease, color 0.4s ease; }
 [data-editor-theme="dark"] .layout-card:hover, [data-editor-theme="dark"] .layout-card.active { border-color: var(--primary-accent); }
+
+/* --- Estilos para el interruptor de tema --- */
+.theme-toggle-switch { cursor: pointer; }
+.theme-toggle-track {
+    width: 50px; height: 26px;
+    background-color: #495057;
+    border-radius: 13px;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.4s ease;
+}
+.theme-toggle-thumb {
+    width: 20px; height: 20px;
+    background-color: var(--color-white);
+    border-radius: 50%; 
+    display: grid;
+    place-items: center;
+    transform: translateX(0);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.theme-toggle-thumb svg {
+    /* Hacemos que ambos iconos ocupen la misma celda del grid para que se superpongan */
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    color: #495057;
+    transition: opacity 0.2s ease;
+}
+.theme-icon-sun { opacity: 0; }
+.theme-icon-moon { opacity: 1; }
+
+[data-editor-theme="dark"] .theme-toggle-track {
+    background-color: var(--primary-accent);
+}
+[data-editor-theme="dark"] .theme-toggle-thumb {
+    transform: translateX(24px);
+}
+[data-editor-theme="dark"] .theme-toggle-thumb svg {
+    color: var(--primary-accent);
+}
+[data-editor-theme="dark"] .theme-icon-sun {
+    opacity: 1;
+}
+[data-editor-theme="dark"] .theme-icon-moon {
+    opacity: 0;
+}
+
+
+
+
 
 /* --- Estilos para el Modal "Sobre mí" --- */
 .modal-overlay {
