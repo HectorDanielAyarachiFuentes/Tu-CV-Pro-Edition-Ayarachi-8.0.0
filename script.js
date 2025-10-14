@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const downloadHtmlBtn = document.getElementById('download-html-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
+    const saveNotificationEl = document.getElementById('save-notification');
 
     let loadedIcons = [];
     let svgCache = {};
@@ -296,6 +297,30 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- 4. CORE FUNCTIONS ---
+    let saveTimeout;
+    const showSaveNotification = () => {
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveNotificationEl.classList.add('show');
+        saveTimeout = setTimeout(() => {
+            saveNotificationEl.classList.remove('show');
+        }, 2000); // La notificación se ocultará después de 2 segundos
+    };
+
+    const saveState = () => {
+        try {
+            localStorage.setItem('cvProData', JSON.stringify(cvData));
+            showSaveNotification();
+        } catch (error) {
+            console.error("Error al guardar el estado en localStorage:", error);
+        }
+    };
+
+    const loadState = () => {
+        const savedData = localStorage.getItem('cvProData');
+        if (savedData) {
+            Object.assign(cvData, JSON.parse(savedData));
+        }
+    };
     const renderForm = (html) => {
         formWrapper.innerHTML = html;
         requestAnimationFrame(() => formWrapper.querySelector('.form-section')?.classList.add('active'));
@@ -363,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             draggedItem = null;
             const newOrder = [...list.querySelectorAll('.draggable-item')].map(item => item.dataset.sectionKey);
             cvData.sectionOrder = newOrder;
-            renderCVPreview();
+            updateAndRender();
         });
 
         list.addEventListener('dragover', e => {
@@ -563,7 +588,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         (inputHandlers[section] || inputHandlers[target.id])?.();
+        updateAndRender();
+    };
+
+    // Nueva función central para renderizar y guardar
+    const updateAndRender = () => {
         renderCVPreview();
+        saveState();
     };
 
     const handleDynamicListInput = (target, section) => {
@@ -629,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setActiveSection(section);
             }
 
-            renderCVPreview();
+            updateAndRender();
         }
     };
 
@@ -682,6 +713,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 5. INITIALIZATION & EVENT LISTENERS ---
     async function init() {
+        loadState(); // Cargar datos guardados al inicio
+
         await Promise.all([
             loadTemplates(),
             loadGradientPresets(),
@@ -708,8 +741,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const level = e.target.querySelector('#skillLevel').value;
                 if (nameInput.value.trim()) {
                     cvData.skills.push({ id: Date.now(), name: nameInput.value.trim(), level });
-                    setActiveSection('skills');
-                    renderCVPreview();
+                    updateAndRender(); // Guardamos el nuevo skill
+                    setActiveSection('skills'); // Recargamos el formulario para mostrarlo
                 }
             }
         });
@@ -719,8 +752,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     cvData.avatar = { type: 'photo', value: event.target.result };
-                    setActiveSection('avatar');
-                    renderCVPreview();
+                    updateAndRender(); // Guardamos la nueva foto
+                    setActiveSection('avatar'); // Recargamos el formulario para mostrarla
                 };
                 reader.readAsDataURL(e.target.files[0]);
             }
