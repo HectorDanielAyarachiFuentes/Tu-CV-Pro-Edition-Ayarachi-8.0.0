@@ -77,6 +77,32 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Primavera', accent: '#7CFC00', dark: '#316400', light: '#000000', muted: '#548324', title: '' }
     ];
 
+    // --- VALIDATION HELPERS ---
+    const validators = {
+        email: (value) => (value === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) ? '' : 'Formato inválido. Ej: nombre@dominio.com',
+        phone: (value) => (value === '' || /^[\d\s+()-]*$/.test(value)) ? '' : 'Formato inválido. Ej: +54 9 11 1234-5678',
+        website: (value) => {
+            if (value === '') return '';
+            // Permite valores sin protocolo para conveniencia del usuario
+            const urlToTest = (!value.startsWith('http://') && !value.startsWith('https://')) ? `https://${value}` : value;
+            try {
+                new URL(urlToTest);
+                return '';
+            } catch (_) {
+                return 'Formato inválido. Ej: linkedin.com/in/usuario';
+            }
+        },
+        initials: (value) => (value.length <= 3) ? '' : 'Máximo 3 caracteres.',
+        dateRange: (itemEl) => {
+            const startDateInput = itemEl.querySelector('input[name="startDate"]');
+            const endDateInput = itemEl.querySelector('input[name="endDate"]');
+            if (startDateInput.value && endDateInput.value && startDateInput.value > endDateInput.value) {
+                return 'La fecha de fin no puede ser anterior a la de inicio.';
+            }
+            return '';
+        }
+    };
+
     // --- 2. DOM ELEMENTS & CONFIG ---
     const formWrapper = document.getElementById('form-section-wrapper');
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
@@ -174,39 +200,39 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const renderAvatarFormHTML = () => {
         const { type, value } = cvData.avatar || {type:'initials', value:''};
-        return `<div class="form-section" data-section="avatar"><h2 class="section-title">Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte.</p><div class="avatar-tabs"><div class="avatar-tab ${type==='none'?'active':''}" data-type="none">Nada</div><div class="avatar-tab ${type==='photo'?'active':''}" data-type="photo">Foto</div><div class="avatar-tab ${type==='url'?'active':''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type==='initials'?'active':''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type==='icon'?'active':''}" data-type="icon">Icono</div><div class="avatar-tab ${type==='svg'?'active':''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type==='quote'?'active':''}" data-type="quote">Cita</div><div class="avatar-tab ${type==='qr'?'active':''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type==='none'?'active':''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type==='photo'?'active':''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type==='photo'&&value?value:'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type==='photo'&&value?'<button id="remove-photo-btn" class="btn">Eliminar Foto</button>':''}</div></div></div><div class="avatar-content ${type==='url'?'active':''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type==='url'?value:''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type==='initials'?'active':''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type==='initials'?value:''}" placeholder="HD"></div></div><div class="avatar-content ${type==='icon'?'active':''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${loadedIcons.map(iconPath =>`<div class="icon-option ${type==='icon' && value===iconPath ? 'active' : ''}" data-icon-path="${iconPath}"><img src="${iconPath}" alt="icon" style="width:36px; height:36px;"/></div>`).join('')}</div></div><div class="avatar-content ${type==='svg'?'active':''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type==='svg'?value:''}</textarea></div></div><div class="avatar-content ${type==='quote'?'active':''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type==='quote'?value:''}</textarea></div></div><div class="avatar-content ${type==='qr'?'active':''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type==='qr'?value:''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`;
+        return `<div class="form-section" data-section="avatar"><h2 class="section-title">Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte.</p><div class="avatar-tabs"><div class="avatar-tab ${type==='none'?'active':''}" data-type="none">Nada</div><div class="avatar-tab ${type==='photo'?'active':''}" data-type="photo">Foto</div><div class="avatar-tab ${type==='url'?'active':''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type==='initials'?'active':''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type==='icon'?'active':''}" data-type="icon">Icono</div><div class="avatar-tab ${type==='svg'?'active':''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type==='quote'?'active':''}" data-type="quote">Cita</div><div class="avatar-tab ${type==='qr'?'active':''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type==='none'?'active':''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type==='photo'?'active':''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type==='photo'&&value?value:'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type==='photo'&&value?'<button id="remove-photo-btn" class="btn">Eliminar Foto</button>':''}</div></div></div><div class="avatar-content ${type==='url'?'active':''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type==='url'?value:''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type==='initials'?'active':''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type==='initials'?value:''}" placeholder="Ej: AF"></div></div><div class="avatar-content ${type==='icon'?'active':''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${loadedIcons.map(iconPath =>`<div class="icon-option ${type==='icon' && value===iconPath ? 'active' : ''}" data-icon-path="${iconPath}"><img src="${iconPath}" alt="icon" style="width:36px; height:36px;"/></div>`).join('')}</div></div><div class="avatar-content ${type==='svg'?'active':''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type==='svg'?value:''}</textarea></div></div><div class="avatar-content ${type==='quote'?'active':''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type==='quote'?value:''}</textarea></div></div><div class="avatar-content ${type==='qr'?'active':''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type==='qr'?value:''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`;
     };
-    const renderPersonalFormHTML = () => { const p=cvData.personalInfo; return `<div class="form-section" data-section="personal"><h2 class="section-title">Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName||''}"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName||''}"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title||''}"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email||''}"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone||''}"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address||''}"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website||''}"></div><div class="form-group"><label>Resumen</label><textarea name="summary" rows="5">${p.summary||''}</textarea></div></div>`; };
-    const renderSkillsFormHTML = () => `<div class="form-section" data-section="skills"><h2 class="section-title">Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Python..."></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;">+ Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s=>`<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
+    const renderPersonalFormHTML = () => { const p=cvData.personalInfo; return `<div class="form-section" data-section="personal"><h2 class="section-title">Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName||''}" placeholder="Ej: Ana"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName||''}" placeholder="Ej: García"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title||''}" placeholder="Ej: Desarrolladora de Software"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email||''}" placeholder="ej: ana.garcia@email.com"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone||''}" placeholder="Ej: +54 9 11 1234-5678"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address||''}" placeholder="Ej: Buenos Aires, Argentina"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website||''}" placeholder="linkedin.com/in/anagarcia"></div><div class="form-group"><label>Resumen</label><p class="subsection-description" style="margin-top:0; margin-bottom:0.5rem;">Un párrafo breve y potente que destaque tu experiencia clave, tus habilidades más fuertes y tus objetivos profesionales.</p><textarea name="summary" rows="5" placeholder="Ej: Desarrollador de Software con 5 años de experiencia en aplicaciones web de alto rendimiento. Experto en Python y AWS. Busco aplicar mis habilidades en un entorno desafiante para crear soluciones innovadoras.">${p.summary||''}</textarea></div></div>`; };
+    const renderSkillsFormHTML = () => `<div class="form-section" data-section="skills"><h2 class="section-title">Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Ej: Python"></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;">+ Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s=>`<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
     const renderDynamicListFormHTML = (section, config) => {
         const descriptionPlaceholder = section === 'experience'
-            ? 'Ej: \n- Lideré el desarrollo del nuevo módulo de reportes.\n- Optimicé las consultas a la base de datos, mejorando el rendimiento en un 40%.\n- Implementé un pipeline de CI/CD con GitHub Actions.'
-            : 'Ej: \n- Proyecto final sobre análisis de datos con Python.\n- Mención honorífica por promedio académico.';
+            ? 'Usa guiones (-) para listar tus logros. Cuantifica tus resultados siempre que sea posible.\n\nEj:\n- Lideré el desarrollo del nuevo módulo de reportes, resultando en un aumento del 20% en la satisfacción del cliente.\n- Optimicé las consultas a la base de datos, mejorando el rendimiento en un 40%.\n- Implementé un pipeline de CI/CD con GitHub Actions, reduciendo el tiempo de despliegue en un 75%.'
+            : 'Menciona logros o proyectos destacados durante tu formación.\n\nEj:\n- Proyecto final sobre análisis de datos con Python para predecir la demanda de productos.\n- Mención honorífica por promedio académico sobresaliente (Top 5% de la promoción).';
 
         return `<div class="form-section" data-section="${section}">
             <h2 class="section-title">${config.title}</h2>
             <p class="section-subtitle">${config.subtitle}</p>
             <div class="add-item-container">
                 <button class="btn btn-secondary" data-action="add" data-section="${section}">+ Añadir ${config.singularTitle}</button>
-            </div>
+            </div><div class="validation-message" data-validation-for="dateRange"></div>
             <div class="dynamic-list">${(cvData[section] || []).map(item => `
                 <div class="item" data-id="${item.id}">
                     <div class="item-header">
                         <h4>${item.position || item.degree || 'Nuevo Elemento'}</h4>
                         <button class="btn-delete" data-action="delete" data-section="${section}" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                     </div>
-                    <div class="form-group"><label>${config.field1}</label><input type="text" name="${config.name1}" value="${item[config.name1] || ''}"></div>
-                    <div class="form-group"><label>${config.field2}</label><input type="text" name="${config.name2}" value="${item[config.name2] || ''}"></div>
+                    <div class="form-group"><label>${config.field1}</label><input type="text" name="${config.name1}" value="${item[config.name1] || ''}" placeholder="${config.placeholder1 || ''}"></div>
+                    <div class="form-group"><label>${config.field2}</label><input type="text" name="${config.name2}" value="${item[config.name2] || ''}" placeholder="${config.placeholder2 || ''}"></div>
                     <div class="form-group"><label>Fecha Inicio</label><input type="month" name="startDate" value="${item.startDate || ''}"></div>
                     <div class="form-group"><label>Fecha Fin</label><input type="month" name="endDate" value="${item.endDate || ''}" ${item.current ? 'disabled' : ''}></div>
-                    <div class="form-group" style="font-size:.9rem;"><label style="display:flex;align-items:center;gap:.5rem;"><input type="checkbox" name="current" ${item.current ? 'checked' : ''}> Actualmente aquí</label></div>
+                    <div class="form-group" style="font-size:.9rem;"><label style="display:flex;align-items:center;gap:.5rem;"><input type="checkbox" name="current" ${item.current ? 'checked' : ''}> Actualmente aquí</label><div class="validation-message" data-validation-for="dateRange"></div></div>
                     <div class="form-group"><label>Descripción y Logros</label><textarea name="description" rows="4" placeholder="${descriptionPlaceholder}">${item.description || ''}</textarea></div>
                 </div>`).join('')}
             </div>
         </div>`;
     };
-    const renderImpactsFormHTML = () => `<div class="form-section" data-section="impacts"><h2 class="section-title">Impacto Clave</h2><p class="section-subtitle">Añade tus logros más importantes y cuantificables.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="impacts">+ Añadir Logro</button></div><div class="dynamic-list">${(cvData.impacts || []).map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>Logro Clave</h4><button class="btn-delete" data-action="delete" data-section="impacts" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-group"><label>Descripción del logro</label><textarea name="description" rows="3">${item.description || ''}</textarea></div></div>`).join('')}</div></div>`;
-    const renderPortfolioFormHTML = () => `<div class="form-section" data-section="portfolio"><h2 class="section-title">Portafolio</h2><p class="section-subtitle">Muestra tus mejores trabajos visuales.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="portfolio">+ Añadir Proyecto</button></div><div class="dynamic-list">${cvData.portfolio.map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.title || 'Nuevo Proyecto'}</h4><button class="btn-delete" data-action="delete" data-section="portfolio" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div style="display: flex; gap: 1rem; align-items: flex-start;"><img src="${item.img || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);" class="portfolio-preview"><div style="flex-grow: 1;"><div class="form-group"><label>Título del Proyecto</label><input type="text" name="title" value="${item.title || ''}"></div><div class="form-group" style="margin-bottom:0;"><label>URL de la Imagen</label><input type="text" name="img" value="${item.img || ''}" placeholder="https://ejemplo.com/imagen.png"></div></div></div></div>`).join('')}</div></div>`;
+    const renderImpactsFormHTML = () => `<div class="form-section" data-section="impacts"><h2 class="section-title">Impacto Clave</h2><p class="section-subtitle">Añade tus logros más importantes y cuantificables.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="impacts">+ Añadir Logro</button></div><div class="dynamic-list">${(cvData.impacts || []).map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>Logro Clave</h4><button class="btn-delete" data-action="delete" data-section="impacts" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-group"><label>Descripción del logro</label><textarea name="description" rows="3" placeholder="Ej: Reduje los costos de infraestructura en un 20% optimizando instancias EC2.">${item.description || ''}</textarea></div></div>`).join('')}</div></div>`;
+    const renderPortfolioFormHTML = () => `<div class="form-section" data-section="portfolio"><h2 class="section-title">Portafolio</h2><p class="section-subtitle">Muestra tus mejores trabajos visuales.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="portfolio">+ Añadir Proyecto</button></div><div class="dynamic-list">${cvData.portfolio.map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.title || 'Nuevo Proyecto'}</h4><button class="btn-delete" data-action="delete" data-section="portfolio" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div style="display: flex; gap: 1rem; align-items: flex-start;"><img src="${item.img || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);" class="portfolio-preview"><div style="flex-grow: 1;"><div class="form-group"><label>Título del Proyecto</label><input type="text" name="title" value="${item.title || ''}" placeholder="Ej: Diseño de App Móvil"></div><div class="form-group" style="margin-bottom:0;"><label>URL de la Imagen</label><input type="text" name="img" value="${item.img || ''}" placeholder="https://ejemplo.com/imagen.png"></div></div></div></div>`).join('')}</div></div>`;
     const renderFooterFormHTML = () => `<div class="form-section" data-section="footer"><h2 class="section-title">Pie de Página</h2><p class="section-subtitle">Añade enlaces o texto final.</p><form id="footer-form" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;"><div class="form-grid"><div class="form-group" style="margin:0;"><label for="footer-item-type">Tipo</label><select id="footer-item-type">${Object.keys(templateHelpers.footerIcons).map(k => `<option value="${k}">${k.charAt(0).toUpperCase() + k.slice(1)}</option>`).join('')}</select></div><div class="form-group" style="margin:0;"><label for="footer-item-label">Etiqueta (opcional)</label><input id="footer-item-label" placeholder="LinkedIn"></div></div><div class="form-group" style="margin:0;"><label for="footer-item-value">Valor</label><input id="footer-item-value" placeholder="tu-usuario"></div><button type="button" class="btn btn-secondary" data-action="add" data-section="footer" style="align-self: flex-start;">+ Añadir Elemento</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="footer-list">${cvData.footer.map(f=>`<div class="footer-item" data-id="${f.id}"> ${templateHelpers.footerIcons[f.type]} <span>${f.label||''}</span> <p>${f.value}</p> <button class="btn-delete" data-action="delete" data-section="footer" data-id="${f.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
     const renderStructureFormHTML = () => {
         const sectionLabels = { summary: 'Resumen', experience: 'Experiencia', education: 'Educación', skills: 'Habilidades', impacts: 'Impacto Clave', portfolio: 'Portafolio' };
@@ -324,8 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formRenderers.avatar = () => renderForm(renderAvatarFormHTML());
         formRenderers.personal = () => renderForm(renderPersonalFormHTML());
         formRenderers.skills = () => renderForm(renderSkillsFormHTML());
-        formRenderers.experience = () => renderForm(renderDynamicListFormHTML('experience', {title:'Experiencia Laboral', singularTitle: 'Experiencia', subtitle:'Detalla tus roles previos. ¡Enfócate en logros cuantificables para demostrar tu impacto!', field1:'Cargo', name1:'position', field2:'Empresa', name2:'company'}));
-        formRenderers.education = () => renderForm(renderDynamicListFormHTML('education', {title:'Educación', singularTitle: 'Formación', subtitle:'Incluye tus títulos, certificaciones y cursos más relevantes.', field1:'Título', name1:'degree', field2:'Institución', name2:'institution'}));
+        formRenderers.experience = () => renderForm(renderDynamicListFormHTML('experience', {title:'Experiencia Laboral', singularTitle: 'Experiencia', subtitle:'Detalla tus roles previos. ¡Enfócate en logros cuantificables para demostrar tu impacto!', field1:'Cargo', name1:'position', placeholder1: 'Ej: Desarrollador Backend', field2:'Empresa', name2:'company', placeholder2: 'Ej: Tech Solutions Inc.'}));
+        formRenderers.education = () => renderForm(renderDynamicListFormHTML('education', {title:'Educación', singularTitle: 'Formación', subtitle:'Incluye tus títulos, certificaciones y cursos más relevantes.', field1:'Título', name1:'degree', placeholder1: 'Ej: Ingeniería en Sistemas', field2:'Institución', name2:'institution', placeholder2: 'Ej: Universidad de Buenos Aires'}));
         formRenderers.impacts = () => renderForm(renderImpactsFormHTML());
         formRenderers.portfolio = () => renderForm(renderPortfolioFormHTML());
         formRenderers.footer = () => renderForm(renderFooterFormHTML());
@@ -434,6 +460,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirmed) {
             // Restauramos cvData al estado por defecto
             cvData = JSON.parse(JSON.stringify(defaultCvData));
+            
+            // Limpiar cualquier clase de validación que haya quedado en el formulario
+            document.querySelectorAll('.form-section input.invalid, .form-section textarea.invalid').forEach(el => {
+                el.classList.remove('invalid');
+            });
+
             // Guardamos el estado reseteado
             saveState();
             // Volvemos a la pantalla de bienvenida
@@ -787,6 +819,33 @@ document.addEventListener('DOMContentLoaded', () => {
         (inputHandlers[section] || inputHandlers[target.id])?.();
         updateAndRender();
     };
+    
+    const validateInput = (target) => {
+        const parentGroup = target.closest('.form-group');
+        if (!parentGroup) return;
+    
+        // Limpia el mensaje de error anterior
+        let messageEl = parentGroup.querySelector('.validation-message');
+        if (!messageEl) {
+            messageEl = document.createElement('div');
+            messageEl.className = 'validation-message';
+            parentGroup.appendChild(messageEl);
+        }
+        messageEl.textContent = '';
+    
+        const validationType = target.name || target.id.replace('-input', '');
+        const validator = validators[validationType];
+    
+        if (validator) {
+            const errorMessage = validator(target.value);
+            if (errorMessage) {
+                target.classList.add('invalid');
+                messageEl.textContent = errorMessage;
+            } else {
+                target.classList.remove('invalid');
+            }
+        }
+    };
 
     // Nueva función central para renderizar y guardar
     const updateAndRender = () => {
@@ -798,13 +857,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemEl = target.closest('.item');
         if (!itemEl) return;
         const itemId = itemEl.dataset.id;
-        const item = cvData[section].find(i => i.id == itemId);
+        const itemIndex = cvData[section].findIndex(i => i.id == itemId);
+        if (itemIndex === -1) return;
+
+        const item = cvData[section][itemIndex];
         if (item) {
             item[target.name] = target.type === 'checkbox' ? target.checked : target.value;
             if (target.name === 'current') {
                 const endDateInput = itemEl.querySelector('input[name="endDate"]');
-                if (endDateInput) endDateInput.disabled = target.checked;
+                if (endDateInput) {
+                    endDateInput.disabled = target.checked;
+                    // Si se marca "Actualmente aquí", limpiamos la validación de fecha de fin
+                    if (target.checked) {
+                        endDateInput.classList.remove('invalid');
+                        const validationMessageEl = itemEl.querySelector('[data-validation-for="dateRange"]');
+                        if (validationMessageEl) {
+                            validationMessageEl.textContent = '';
+                        }
+                    }
+                }
                 if (target.checked) item.endDate = '';
+            } else if (target.name === 'startDate' || target.name === 'endDate') {
+                validateDateRange(itemEl);
             }
             if (section === 'portfolio') {
                 if (target.name === 'img') {
@@ -815,6 +889,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     itemEl.querySelector('.item-header h4').textContent = target.value || 'Nuevo Proyecto';
                 }
             }
+        }
+    };
+
+    const validateDateRange = (itemEl) => {
+        const messageEl = itemEl.querySelector('[data-validation-for="dateRange"]');
+        const endDateInput = itemEl.querySelector('input[name="endDate"]');
+        const errorMessage = validators.dateRange(itemEl);
+        if (errorMessage) {
+            messageEl.textContent = errorMessage;
+            endDateInput.classList.add('invalid');
+        } else {
+            messageEl.textContent = '';
+            endDateInput.classList.remove('invalid');
         }
     };
 
@@ -1000,7 +1087,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // --- Event Listeners Refactorizados ---
-        formWrapper.addEventListener('input', handleFormInput);
+        formWrapper.addEventListener('input', (e) => {
+            handleFormInput(e);
+            // La validación de fechas se maneja por separado en handleDynamicListInput
+            if (e.target.name !== 'startDate' && e.target.name !== 'endDate') {
+                validateInput(e.target);
+            }
+        });
         formWrapper.addEventListener('click', handleFormClick);
 
         formWrapper.addEventListener('submit', (e) => {
@@ -1037,6 +1130,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const activeBgTarget = document.querySelector('.background-target-selector.active')?.dataset.bgTarget || 'main';
             document.querySelectorAll('.gradient-content-wrapper').forEach(w => {
                 w.style.display = w.dataset.bgTypeTarget === activeBgTarget ? 'block' : 'none';
+            });
+
+            // Ejecutar validación en todos los campos al cargar una sección
+            document.querySelectorAll('.form-section.active input, .form-section.active textarea').forEach(input => {
+                validateInput(input);
+            });
+            // Y también para los rangos de fechas
+            document.querySelectorAll('.form-section.active .item').forEach(itemEl => {
+                validateDateRange(itemEl);
             });
         }
         renderCVPreview();

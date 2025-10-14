@@ -163,6 +163,20 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
 .form-group label { display: block; font-weight: 500; margin-bottom: 0.3rem; }
 .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.7rem; font-size: 14px; font-family: var(--font-body); border: 1px solid var(--color-border); border-radius: var(--radius-md); background-color: var(--color-light-bg); transition: border-color 0.2s, box-shadow 0.2s; }
 .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-accent) 25%, transparent); }
+.form-group input.invalid, .form-group textarea.invalid {
+    border-color: var(--color-destructive);
+}
+.validation-message {
+    font-size: 0.8rem;
+    color: var(--color-destructive);
+    margin-top: 0.25rem;
+    min-height: 1.2em; /* Evita que el layout salte cuando aparece/desaparece */
+    display: block;
+}
+.form-group input.invalid:focus, .form-group textarea.invalid:focus {
+    border-color: var(--color-destructive);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-destructive) 25%, transparent);
+}
 .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-accent); box-shadow: 0 0 0 2px var(--color-light-bg-alt); }
 .avatar-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
 .avatar-tab { padding: 0.5rem 1rem; border-radius: var(--radius-md); cursor: pointer; background-color: var(--color-light-bg-alt); font-weight: 500; font-size: 0.85rem;}
