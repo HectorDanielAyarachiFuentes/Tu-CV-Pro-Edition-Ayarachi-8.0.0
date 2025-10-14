@@ -402,12 +402,13 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
     transform: translateX(0);
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-.theme-toggle-thumb svg {
+.theme-toggle-thumb img {
     /* Hacemos que ambos iconos ocupen la misma celda del grid para que se superpongan */
     grid-column: 1 / -1;
     grid-row: 1 / -1;
-    color: #495057;
     transition: opacity 0.2s ease;
+    width: 14px;
+    height: 14px;
 }
 .theme-icon-sun { opacity: 0; }
 .theme-icon-moon { opacity: 1; }
@@ -417,9 +418,6 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
 }
 [data-editor-theme="dark"] .theme-toggle-thumb {
     transform: translateX(24px);
-}
-[data-editor-theme="dark"] .theme-toggle-thumb svg {
-    color: var(--primary-accent);
 }
 [data-editor-theme="dark"] .theme-icon-sun {
     opacity: 1;
