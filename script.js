@@ -3,12 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. STATE MANAGEMENT ---
     let cvData = {
         layout: 'classic', 
-        themeColor: '#dc3545',
-        backgroundGradient: '', // Almacenará el gradiente seleccionado
-        // Nuevas propiedades para los colores del texto
+        themeColor: '#dc3545', 
+        backgroundMain: '', 
+        backgroundSidebar: '',
+        // Propiedades para los colores del texto y elementos
         textColorDark: '#212529', // Para texto principal sobre fondos claros
         textColorLight: '#ffffff', // Para texto sobre fondos oscuros/de color
         textColorMuted: '#6c757d', // Para subtítulos, fechas, etc.
+        sectionTitleColor: '', // Color para los títulos de sección. Si está vacío, usa el themeColor.
         sectionOrder: ['summary', 'experience', 'education', 'skills', 'impacts', 'portfolio'], // Orden personalizable
         avatar: { type: 'initials', value: 'HD' }, 
         personalInfo: { 
@@ -51,26 +53,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Paletas de colores predefinidas
     const colorPalettes = [
-        { name: 'Clásico Rojo', accent: '#dc3545', dark: '#212529', light: '#ffffff', muted: '#6c757d' },
-        { name: 'Océano Azul', accent: '#0d6efd', dark: '#032a5c', light: '#ffffff', muted: '#5a7a9c' },
-        { name: 'Bosque Verde', accent: '#198754', dark: '#0a3622', light: '#ffffff', muted: '#5c806f' },
-        { name: 'Púrpura Real', accent: '#6f42c1', dark: '#2c1a4d', light: '#ffffff', muted: '#7d6b99' },
-        { name: 'Gris Corporativo', accent: '#525f7f', dark: '#212529', light: '#ffffff', muted: '#8898aa' },
-        { name: 'Atardecer Coral', accent: '#fd7e14', dark: '#422105', light: '#ffffff', muted: '#a17a58' },
-        { name: 'Menta Fresca', accent: '#20c997', dark: '#0c4e3b', light: '#ffffff', muted: '#669487' },
-        { name: 'Cielo Despejado', accent: '#0dcaf0', dark: '#054f5e', light: '#212529', muted: '#568b96' },
-        { name: 'Rosa Encendido', accent: '#d63384', dark: '#571435', light: '#ffffff', muted: '#a36685' },
-        { name: 'Dorado Lujoso', accent: '#ffc107', dark: '#664d03', light: '#212529', muted: '#a18a4a' },
-        { name: 'Medianoche', accent: '#495057', dark: '#111315', light: '#e9ecef', muted: '#adb5bd' },
-        { name: 'Tierra', accent: '#8B4513', dark: '#3D1F0C', light: '#F5F5DC', muted: '#A0522D' },
-        { name: 'Lavanda', accent: '#967bb6', dark: '#483263', light: '#ffffff', muted: '#b1a1c9' },
-        { name: 'Grafito', accent: '#343a40', dark: '#000000', light: '#f8f9fa', muted: '#adb5bd' },
-        { name: 'Vino Tinto', accent: '#800020', dark: '#33000d', light: '#ffffff', muted: '#a64059' },
-        { name: 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779' },
-        { name: 'Cereza', accent: '#d2042d', dark: '#4f0111', light: '#ffffff', muted: '#d16078' },
-        { name: 'Acero', accent: '#4682B4', dark: '#1c3447', light: '#ffffff', muted: '#7da7c9' },
-        { name: 'Café', accent: '#6f4e37', dark: '#3a291d', light: '#f5f5f5', muted: '#9b8678' },
-        { name: 'Primavera', accent: '#7CFC00', dark: '#316400', light: '#000000', muted: '#548324' }
+        // Paletas actualizadas para incluir el color de título de sección (title).
+        { name: 'Clásico Rojo', accent: '#dc3545', dark: '#212529', light: '#ffffff', muted: '#6c757d', title: '' },
+        { name: 'Océano Azul', accent: '#0d6efd', dark: '#032a5c', light: '#ffffff', muted: '#5a7a9c', title: '' },
+        { name: 'Bosque Verde', accent: '#198754', dark: '#0a3622', light: '#ffffff', muted: '#5c806f', title: '' },
+        { name: 'Púrpura Real', accent: '#6f42c1', dark: '#2c1a4d', light: '#ffffff', muted: '#7d6b99', title: '' },
+        { name: 'Gris Corporativo', accent: '#525f7f', dark: '#212529', light: '#ffffff', muted: '#8898aa', title: '' },
+        { name: 'Atardecer Coral', accent: '#fd7e14', dark: '#422105', light: '#ffffff', muted: '#a17a58', title: '' },
+        { name: 'Menta Fresca', accent: '#20c997', dark: '#0c4e3b', light: '#ffffff', muted: '#669487', title: '' },
+        { name: 'Cielo Despejado', accent: '#0dcaf0', dark: '#054f5e', light: '#212529', muted: '#568b96', title: '' },
+        { name: 'Rosa Encendido', accent: '#d63384', dark: '#571435', light: '#ffffff', muted: '#a36685', title: '' },
+        { name: 'Dorado Lujoso', accent: '#ffc107', dark: '#664d03', light: '#212529', muted: '#a18a4a', title: '' },
+        { name: 'Medianoche', accent: '#495057', dark: '#111315', light: '#e9ecef', muted: '#adb5bd', title: '' },
+        { name: 'Tierra', accent: '#8B4513', dark: '#3D1F0C', light: '#F5F5DC', muted: '#A0522D', title: '' },
+        { name: 'Lavanda', accent: '#967bb6', dark: '#483263', light: '#ffffff', muted: '#b1a1c9', title: '' },
+        { name: 'Grafito', accent: '#343a40', dark: '#000000', light: '#f8f9fa', muted: '#adb5bd', title: '' },
+        { name: 'Vino Tinto', accent: '#800020', dark: '#33000d', light: '#ffffff', muted: '#a64059', title: '' },
+        { name:- 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779' },
+        { name: 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779', title: '' },
+        { name: 'Cereza', accent: '#d2042d', dark: '#4f0111', light: '#ffffff', muted: '#d16078', title: '' },
+        { name: 'Acero', accent: '#4682B4', dark: '#1c3447', light: '#ffffff', muted: '#7da7c9', title: '' },
+        { name: 'Café', accent: '#6f4e37', dark: '#3a291d', light: '#f5f5f5', muted: '#9b8678', title: '' },
+        { name: 'Primavera', accent: '#7CFC00', dark: '#316400', light: '#000000', muted: '#548324', title: '' }
     ];
 
     // --- 2. DOM ELEMENTS & CONFIG ---
@@ -95,8 +99,78 @@ document.addEventListener('DOMContentLoaded', () => {
     // Esto hace que la función `buildFormRenderers` sea más limpia.
     const renderWelcomeFormHTML = () => `<div class="form-section" data-section="welcome"><h2 class="section-title">¡Bienvenido al Generador de CV Pro!</h2><p class="section-subtitle">Sigue estos sencillos pasos para crear tu currículum profesional.</p><div style="margin-top:2rem; display:flex; flex-direction:column; gap:1.5rem;"><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">1</div><div><h3 style="margin:0 0 0.2rem 0;">Personaliza el Diseño</h3><p style="color:var(--color-muted-text);">Ve a la sección "Diseño" para elegir una plantilla y tu color favorito.</p></div></div><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">2</div><div><h3 style="margin:0 0 0.2rem 0;">Completa las Secciones</h3><p style="color:var(--color-muted-text);">Usa la navegación para rellenar tu avatar, experiencia, educación y habilidades.</p></div></div><div style="display:flex; gap:1rem;"><div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--primary-accent); color:white; display:grid; place-items:center; font-weight:bold;">3</div><div><h3 style="margin:0 0 0.2rem 0;">Descarga y Triunfa</h3><p style="color:var(--color-muted-text);">Cuando estés listo, presiona "Descargar PDF" para obtener tu CV profesional.</p></div></div></div></div>`;
     const renderDesignFormHTML = () => {
-        const hexColor = cvData.themeColor.startsWith('#') ? cvData.themeColor : '#dc3545';
-        return `<div class="form-section" data-section="design"><h2 class="section-title">Diseño y Apariencia</h2><p class="section-subtitle">Personaliza cómo se ve tu currículum.</p><div class="design-tabs"><div class="design-tab active" data-tab="templates">Plantillas</div><div class="design-tab" data-tab="colors">Colores</div><div class="design-tab" data-tab="backgrounds">Fondos</div></div><div class="design-content active" data-content="templates"><div class="layout-selector">${Object.keys(templates).map(layout => `<div class="layout-card ${cvData.layout === layout ? 'active' : ''}" data-layout="${layout}"><div class="mini-preview-container"></div><p style="text-transform: capitalize;">${layout.replace('_', ' ')}</p></div>`).join('')}</div></div><div class="design-content" data-content="colors"><div class="subsection-title" style="margin-top:0;">Color de Acento</div><div class="colors"><div class="color-dot ${cvData.themeColor==='#0d6efd'?'active':''}" data-color-value="#0d6efd" style="background:#0d6efd"></div><div class="color-dot ${cvData.themeColor==='#198754'?'active':''}" data-color-value="#198754" style="background:#198754"></div><div class="color-dot ${cvData.themeColor==='#6f42c1'?'active':''}" data-color-value="#6f42c1" style="background:#6f42c1"></div><div class="color-dot ${cvData.themeColor==='#dc3545'?'active':''}" data-color-value="#dc3545" style="background:#dc3545"></div><div class="color-dot ${cvData.themeColor==='#525f7f'?'active':''}" data-color-value="#525f7f" style="background:#525f7f"></div><div class="color-dot ${cvData.themeColor==='#e83e8c'?'active':''}" data-color-value="#e83e8c" style="background:#e83e8c"></div><input type="color" id="custom-color-picker" value="${hexColor}"></div><div class="subsection-title-flex"><div class="subsection-title">Colores del Texto</div><button id="reset-colors-btn" class="btn btn-sm" title="Restablecer colores por defecto"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Restablecer</button></div><div class="text-color-pickers"><div class="form-group"><label for="text-color-dark">Texto Principal</label><input type="color" id="text-color-dark" data-color-type="textColorDark" value="${cvData.textColorDark}"></div><div class="form-group"><label for="text-color-light">Texto Claro</label><input type="color" id="text-color-light" data-color-type="textColorLight" value="${cvData.textColorLight}"></div><div class="form-group"><label for="text-color-muted">Texto Tenue</label><input type="color" id="text-color-muted" data-color-type="textColorMuted" value="${cvData.textColorMuted}"></div></div><div class="subsection-title">Paletas Predeterminadas</div><div class="palette-selector">${colorPalettes.map((p, index) => `<div class="palette-swatch" data-palette-index="${index}" title="${p.name}"><div style="background-color:${p.accent}"></div><div style="background-color:${p.dark}"></div><div style="background-color:${p.light}; border:1px solid #ddd;"></div><div style="background-color:${p.muted}"></div></div>`).join('')}</div></div><div class="design-content" data-content="backgrounds"><div class="gradient-tabs"><div class="gradient-tab active" data-tab="raya">Rayados (${loadedGradients.raya.length})</div><div class="gradient-tab" data-tab="simple">Gradientes (${loadedGradients.simple.length})</div></div><div class="gradient-content active" data-content="raya"><div class="gradient-selector">${loadedGradients.raya.map(grad => `<div class="gradient-swatch ${cvData.backgroundGradient === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div><div class="gradient-content" data-content="simple"><div class="gradient-selector">${loadedGradients.simple.map(grad => `<div class="gradient-swatch ${cvData.backgroundGradient === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div><div class="form-group" style="margin-top: 1.5rem;"><label for="background-gradient-input">Fondo Personalizado</label><p style="color:var(--color-muted-text); margin-bottom: 0.5rem; font-size: 0.85rem;">Pega un gradiente de <a href="https://www.gradientmagic.com/" target="_blank">Gradient Magic</a> o pídele uno nuevo a ChatGPT.</p><textarea id="background-gradient-input" rows="3" placeholder="Pega el código CSS de un 'linear-gradient' o 'radial-gradient' aquí...">${cvData.backgroundGradient || ''}</textarea></div></div></div>`;
+        const renderTextColorPicker = (id, colorType, label, description) => `
+            <div class="text-color-picker" data-highlight-selector="[data-cv-color='${colorType}']">
+                <div class="form-group">
+                    <label for="${id}">${label}</label>
+                    <input type="color" id="${id}" data-color-type="${colorType}" value="${cvData[colorType] || (colorType === 'sectionTitleColor' ? cvData.themeColor : '#000000')}">
+                </div>
+                <div class="color-picker-info">
+                    <p class="color-picker-description">${description}</p>
+                    <div class="color-picker-previews">
+                        <div class="preview-box" style="background-color: #fff; color: ${cvData[colorType] || (colorType === 'sectionTitleColor' ? cvData.themeColor : cvData.textColorDark)};">Aa</div>
+                        <div class="preview-box" style="background-color: #343a40; color: ${cvData[colorType] || (colorType === 'sectionTitleColor' ? cvData.themeColor : cvData.textColorLight)};">Aa</div>
+                    </div>
+                </div>
+            </div>`;
+        
+        // Estado local para la pestaña de diseño
+
+        const renderBackgroundSelector = (targetType, label) => `
+            <div class="background-target-selector ${targetType === 'main' ? 'active' : ''}" data-bg-target="${targetType}" data-highlight-selector="[data-cv-background='${targetType}']">
+                <div class="subsection-title">${label}</div>
+                <div class="gradient-preview" style="background: ${targetType === 'main' ? cvData.backgroundMain : cvData.backgroundSidebar || 'transparent'};">
+                    ${!(targetType === 'main' ? cvData.backgroundMain : cvData.backgroundSidebar) ? '<span>Ninguno</span>' : ''}
+                </div>
+            </div>
+        `;
+
+        const renderGradientSelectors = (targetType) => `
+            <div class="gradient-content-wrapper" data-bg-type-target="${targetType}">
+                <div class="gradient-tabs"><div class="gradient-tab active" data-tab="raya">Rayados (${loadedGradients.raya.length})</div><div class="gradient-tab" data-tab="simple">Gradientes (${loadedGradients.simple.length})</div></div>
+                <div class="gradient-content active" data-content="raya"><div class="gradient-selector">${loadedGradients.raya.map(grad => `<div class="gradient-swatch ${cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`] === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div>
+                <div class="gradient-content" data-content="simple"><div class="gradient-selector">${loadedGradients.simple.map(grad => `<div class="gradient-swatch ${cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`] === grad ? 'active' : ''}" style="background: ${grad};" data-gradient-value="${grad}"></div>`).join('')}</div></div>
+                <div class="form-group" style="margin-top: 1.5rem;"><label for="background-gradient-input-${targetType}">Fondo Personalizado</label><p style="color:var(--color-muted-text); margin-bottom: 0.5rem; font-size: 0.85rem;">Pega un gradiente de <a href="https://www.gradientmagic.com/" target="_blank">Gradient Magic</a> o pídele uno nuevo a ChatGPT.</p><textarea id="background-gradient-input-${targetType}" data-bg-input-target="${targetType}" rows="3" placeholder="Pega el código CSS de un 'linear-gradient' o 'radial-gradient' aquí...">${cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`] || ''}</textarea></div>
+            </div>
+        `;
+
+        const html = `<div class="form-section" data-section="design">
+            <h2 class="section-title">Diseño y Apariencia</h2>
+            <p class="section-subtitle">Personaliza cómo se ve tu currículum.</p>
+            <div class="design-tabs"><div class="design-tab active" data-tab="templates">Plantillas</div><div class="design-tab" data-tab="colors">Colores</div><div class="design-tab" data-tab="backgrounds">Fondos</div></div>
+            <div class="design-content active" data-content="templates"><div class="layout-selector">${Object.keys(templates).map(layout => `<div class="layout-card ${cvData.layout === layout ? 'active' : ''}" data-layout="${layout}"><div class="mini-preview-container"></div><p style="text-transform: capitalize;">${layout.replace('_', ' ')}</p></div>`).join('')}</div></div>
+            <div class="design-content" data-content="colors">
+                <div class="subsection-title" style="margin-top:0;">Color de Acento</div>
+                <p class="subsection-description">El color principal para encabezados, íconos y otros detalles destacados.</p>
+                <div class="colors"><div class="color-dot ${cvData.themeColor==='#0d6efd'?'active':''}" data-color-value="#0d6efd" style="background:#0d6efd"></div><div class="color-dot ${cvData.themeColor==='#198754'?'active':''}" data-color-value="#198754" style="background:#198754"></div><div class="color-dot ${cvData.themeColor==='#6f42c1'?'active':''}" data-color-value="#6f42c1" style="background:#6f42c1"></div><div class="color-dot ${cvData.themeColor==='#dc3545'?'active':''}" data-color-value="#dc3545" style="background:#dc3545"></div><div class="color-dot ${cvData.themeColor==='#525f7f'?'active':''}" data-color-value="#525f7f" style="background:#525f7f"></div><div class="color-dot ${cvData.themeColor==='#e83e8c'?'active':''}" data-color-value="#e83e8c" style="background:#e83e8c"></div><input type="color" id="custom-color-picker" value="${cvData.themeColor}"></div>
+                
+                <div class="subsection-title">Paletas Predeterminadas</div>
+                <p class="subsection-description">Selecciona un esquema de color completo con un solo clic.</p>
+                <div class="palette-selector">${colorPalettes.map((p, index) => `<div class="palette-swatch" data-palette-index="${index}" title="${p.name}"><div style="background-color:${p.accent}"></div><div style="background-color:${p.dark}"></div><div style="background-color:${p.light}; border:1px solid #ddd;"></div><div style="background-color:${p.muted}"></div></div>`).join('')}</div>
+
+                <div class="subsection-title-flex"><div class="subsection-title">Ajuste Fino de Colores</div><button id="reset-colors-btn" class="btn btn-sm" title="Restablecer colores por defecto"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Restablecer</button></div>
+                <p class="subsection-description">Controla el color de cada tipo de texto. Pasa el ratón sobre cada opción para ver qué elementos afecta en el CV.</p>
+                <div class="text-color-pickers-grid">
+                    ${renderTextColorPicker('text-color-dark', 'textColorDark', 'Texto Principal', 'Para párrafos y texto general sobre fondos claros.')}
+                    ${renderTextColorPicker('text-color-light', 'textColorLight', 'Texto Claro', 'Para texto sobre fondos oscuros o de color (ej. barras laterales).')}
+                    ${renderTextColorPicker('text-color-muted', 'textColorMuted', 'Texto Tenue', 'Para subtítulos, fechas y detalles secundarios.')}
+                    ${renderTextColorPicker('section-title-color', 'sectionTitleColor', 'Títulos de Sección', 'Color para los títulos como "Experiencia". Por defecto, usa el color de acento.')}
+                </div>
+            </div>
+            <div class="design-content" data-content="backgrounds">
+                <p class="subsection-description" style="margin-top:0;">Selecciona qué área del CV quieres editar y elige un fondo. No todas las plantillas tienen barra lateral.</p>
+                <div class="background-target-container">
+                    ${renderBackgroundSelector('main', 'Fondo Principal')}
+                    ${renderBackgroundSelector('sidebar', 'Fondo de Barra Lateral')}
+                </div>
+                <div id="background-selectors-wrapper">
+                    ${renderGradientSelectors('main')}
+                    ${renderGradientSelectors('sidebar')}
+                </div>
+            </div>
+        </div>`;
+
+        return html;
     };
     const renderAvatarFormHTML = () => {
         const { type, value } = cvData.avatar || {type:'initials', value:''};
@@ -211,14 +285,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // --- Funciones de renderizado de secciones ---
         renderGenericSection: (title, items, renderItemFn, color, style = '') => {
+            const titleColor = cvData.sectionTitleColor || color;
             if (!items || items.length === 0) return '';
-            return `<div style="margin-top:1.5rem; ${style}"><h3 style="font-family: var(--font-heading); font-size:1rem; font-weight:600; color:${color}; border-bottom:2px solid ${color}; padding-bottom:.25rem; margin-bottom:1rem; display:inline-block; text-transform: uppercase;">${title}</h3>${items.map(renderItemFn).join('')}</div>`;
+            return `<div style="margin-top:1.5rem; ${style}"><h3 data-cv-color="sectionTitleColor" style="font-family: var(--font-heading); font-size:1rem; font-weight:600; color:${titleColor}; border-bottom:2px solid ${titleColor}; padding-bottom:.25rem; margin-bottom:1rem; display:inline-block; text-transform: uppercase;">${title}</h3>${items.map(renderItemFn).join('')}</div>`;
         },
         renderOrderedSections: (data, layoutName = '') => {
             const sectionRenderers = {
-                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{text: data.personalInfo.summary}] : [], item => `<p style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${data.textColorDark};">${item.text}</p>`, opts.color || data.themeColor, opts.style),
-                experience: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Experiencia', data.experience, e => templateHelpers.renderExperienceItem(e, data), opts.color || data.themeColor, opts.style),
-                education: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Educación', data.education, e => templateHelpers.renderEducationItem(e, data), opts.color || data.themeColor, opts.style),
+                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{text: data.personalInfo.summary}] : [], item => `<p data-cv-color="textColorDark" style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${data.textColorDark};">${item.text}</p>`, opts.color || data.themeColor, opts.style),
+                experience: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Experiencia', data.experience, e => templateHelpers.renderExperienceItem(e, data), opts.color || data.themeColor, opts.style), // renderExperienceItem has its own color logic
+                education: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Educación', data.education, e => templateHelpers.renderEducationItem(e, data), opts.color || data.themeColor, opts.style), // renderEducationItem has its own color logic
                 skills: (opts = {}) => {
                     let content;
                     if (layoutName === 'academic') {
@@ -228,11 +303,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (layoutName === 'technical') {
                         content = templateHelpers.renderGenericSection(opts.title || '// SKILLS', data.skills, s => `<span style="display:inline-block; border:1px solid ${data.themeColor}; color:${data.themeColor}; padding: 0.2rem 0.6rem; border-radius: 4px; margin: 0.2rem; font-size:0.8rem;">${s.name}</span>`, opts.color || data.themeColor);
                     } else {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p style="font-size:0.8rem;margin-bottom:.4rem; color:${data.textColorDark};">${s.name}<span style="font-size:.7rem;opacity:.8"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || data.themeColor);
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p data-cv-color="textColorDark" style="font-size:0.8rem;margin-bottom:.4rem; color:${data.textColorDark};">${s.name}<span data-cv-color="textColorMuted" style="font-size:.7rem;opacity:.8"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || data.themeColor);
                     }
                     return content;
                 },
-                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div style="background:#f4f4f4; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${data.textColorDark};">${item.description}</div>`, opts.color || data.themeColor, opts.style),
+                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-cv-color="textColorDark" style="background:#f4f4f4; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${data.textColorDark};">${item.description}</div>`, opts.color || data.themeColor, opts.style),
                 portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid #eee;"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${data.textColorDark};">${item.title}</p></div>`, opts.color || data.themeColor, opts.style || 'column-count:3; column-gap:1rem;')
             };
     
@@ -394,7 +469,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const renderer = formRenderers[sectionName];
         if (typeof renderer === 'function') {
-            renderer(); 
+            // Guardamos la pestaña activa antes de volver a renderizar, si estamos en la sección de diseño.
+            let activeSubTab = null;
+            if (sectionName === 'design') {
+                const activeTabEl = formWrapper.querySelector('.design-tab.active');
+                if (activeTabEl) activeSubTab = activeTabEl.dataset.tab;
+            }
+            renderer();
 
             if (sectionName === 'design') {
                 document.querySelectorAll('.layout-selector .mini-preview-container').forEach(container => {
@@ -407,11 +488,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                 });
+
+                // Si había una pestaña activa guardada, la restauramos.
+                if (activeSubTab) {
+                    const designTabs = formWrapper.querySelectorAll('.design-tab');
+                    const designContents = formWrapper.querySelectorAll('.design-content');
+                    designTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === activeSubTab));
+                    designContents.forEach(c => c.classList.toggle('active', c.dataset.content === activeSubTab));
+                }
             }
 
             // Si la sección es 'structure', inicializamos el drag and drop
             if (sectionName === 'structure') {
                 setupDragAndDrop();
+            }
+            // Si la sección es 'design', configurar los eventos de hover para resaltar
+            if (sectionName === 'design') {
+                setupDesignHighlightListeners();
             }
         } else {
             console.error(`No se encontró un renderer para la sección: "${sectionName}"`);
@@ -452,6 +545,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    // --- LÓGICA PARA RESALTAR ELEMENTOS DEL CV AL HACER HOVER ---
+    const setupDesignHighlightListeners = () => {
+        const highlightableElements = formWrapper.querySelectorAll('[data-highlight-selector]');
+
+        highlightableElements.forEach(element => {
+            const selector = element.dataset.highlightSelector;
+            if (!selector) return;
+
+            element.addEventListener('mouseenter', () => {
+                cvPreviewWrapper.querySelectorAll(selector).forEach(el => {
+                    el.style.transition = 'outline 0.2s ease';
+                    el.style.outline = '2px dashed var(--primary-accent)';
+                });
+            });
+            element.addEventListener('mouseleave', () => {
+                cvPreviewWrapper.querySelectorAll(selector).forEach(el => el.style.outline = 'none');
+            });
+        });
+    };
     // --- NUEVA FUNCIÓN PARA DESCARGAR HTML ---
     const downloadHtml = async () => {
         try {
@@ -650,10 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
             education: () => handleDynamicListInput(target, 'education'),
             impacts: () => handleDynamicListInput(target, 'impacts'),
             portfolio: () => handleDynamicListInput(target, 'portfolio'),
-            design: () => {
-                if (target.id === 'custom-color-picker') cvData.themeColor = target.value;
-                else if (target.dataset.colorType) cvData[target.dataset.colorType] = target.value;
-            },
             avatar: () => {
                 const handler = {
                     'initials-input': () => cvData.avatar = { type: 'initials', value: target.value.toUpperCase() },
@@ -664,9 +772,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }[target.id];
                 handler?.();
             },
-            'background-gradient-input': () => {
-                cvData.backgroundGradient = target.value;
-                document.querySelectorAll('.gradient-swatch.active').forEach(swatch => swatch.classList.remove('active'));
+            design: () => {
+                if (target.id === 'custom-color-picker') cvData.themeColor = target.value;
+                else if (target.dataset.colorType) {
+                    cvData[target.dataset.colorType] = target.value;
+                    setActiveSection('design'); // Re-render form to update color previews
+                } else if (target.dataset.bgInputTarget) {
+                    const targetType = target.dataset.bgInputTarget; // 'main' or 'sidebar'
+                    cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`] = target.value;
+                }
             }
         };
 
@@ -706,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Manejadores para el evento 'click'
     const handleFormClick = (e) => {
-        const button = e.target.closest('button, .avatar-tab, .icon-option, .layout-card, .color-dot, .gradient-swatch, .gradient-tab, .design-tab, .palette-swatch');
+        const button = e.target.closest('button, .avatar-tab, .icon-option, .layout-card, .color-dot, .gradient-swatch, .gradient-tab, .design-tab, .palette-swatch, .background-target-selector');
         if (!button) return;
 
         const section = button.dataset.section || button.closest('.form-section')?.dataset.section;
@@ -737,9 +851,27 @@ document.addEventListener('DOMContentLoaded', () => {
             removePhoto: () => { cvData.avatar = { type: 'photo', value: '' }; },
             selectLayout: () => { cvData.layout = button.dataset.layout; },
             selectColor: () => { cvData.themeColor = button.dataset.colorValue; },
-            selectPalette: () => Object.assign(cvData, colorPalettes[button.dataset.paletteIndex]),
+            selectPalette: () => {
+                const palette = colorPalettes[button.dataset.paletteIndex];
+                cvData.themeColor = palette.accent;
+                cvData.textColorDark = palette.dark;
+                cvData.textColorLight = palette.light;
+                cvData.textColorMuted = palette.muted;
+                cvData.sectionTitleColor = palette.title || ''; // Reset or set from palette
+            },
             resetColors: () => Object.assign(cvData, colorPalettes[0]),
-            selectGradient: () => { cvData.backgroundGradient = button.dataset.gradientValue; },
+            selectGradient: () => {
+                const targetType = button.closest('.gradient-content-wrapper').dataset.bgTypeTarget;
+                const propertyName = `background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`;
+                cvData[propertyName] = button.dataset.gradientValue;
+            },
+            switchBgTarget: () => {
+                const targetType = button.dataset.bgTarget;
+                const parent = button.closest('.design-content');
+                parent.querySelectorAll('.background-target-selector').forEach(s => s.classList.remove('active'));
+                button.classList.add('active');
+                parent.querySelectorAll('.gradient-content-wrapper').forEach(w => w.style.display = w.dataset.bgTypeTarget === targetType ? 'block' : 'none');
+            },
             switchGradientTab: () => switchTab(button, '.gradient-tab', '.gradient-content'),
             switchDesignTab: () => switchTab(button, '.design-tab', '.design-content'),
         };
@@ -748,11 +880,14 @@ document.addEventListener('DOMContentLoaded', () => {
             actionHandlers[action](button); // Pasamos el botón al manejador
 
             // Las acciones de cambio de pestaña solo modifican la UI, no los datos.
-            const isUiOnlyAction = action.toLowerCase().includes('tab');
+            const isUiOnlyAction = action.toLowerCase().includes('tab') || action === 'switchBgTarget';
 
             // Solo se vuelve a renderizar el formulario si la acción NO fue un cambio de pestaña (ej. para 'delete').
             if (section && !isUiOnlyAction) {
-                setActiveSection(section);
+                // For design, we always re-render to show updated color pickers/previews
+                if (section === 'design' || action === 'delete') {
+                    setActiveSection(section);
+                }
             }
 
             // Solo guardamos y mostramos la notificación si la acción modificó datos.
@@ -762,7 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getActionFromElement = (el) => {
         if (el.dataset.action) return el.dataset.action;
-        const classMap = { 'avatar-tab': 'switchAvatarTab', 'icon-option': 'selectIcon', 'layout-card': 'selectLayout', 'color-dot': 'selectColor', 'gradient-swatch': 'selectGradient', 'gradient-tab': 'switchGradientTab', 'design-tab': 'switchDesignTab', 'palette-swatch': 'selectPalette' };
+        const classMap = { 'avatar-tab': 'switchAvatarTab', 'icon-option': 'selectIcon', 'layout-card': 'selectLayout', 'color-dot': 'selectColor', 'gradient-swatch': 'selectGradient', 'gradient-tab': 'switchGradientTab', 'design-tab': 'switchDesignTab', 'palette-swatch': 'selectPalette', 'background-target-selector': 'switchBgTarget' };
         for (const className in classMap) {
             if (el.classList.contains(className)) return classMap[className];
         }
@@ -793,7 +928,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const switchTab = (tabElement, tabSelector, contentSelector) => {
-        const parent = tabElement.closest('.form-section, .design-content');
+        const parent = tabElement.closest('.form-section, .design-content, .gradient-content-wrapper');
         if (!parent) return;
 
         const tabName = tabElement.dataset.tab;
@@ -898,6 +1033,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Si estamos en modo solo-lectura, no es necesario activar ninguna sección del editor.
         if (!document.body.classList.contains('read-only-mode')) {
             setActiveSection(lastSection || 'welcome');
+            // Asegurarse de que el selector de fondo correcto esté visible al cargar
+            const activeBgTarget = document.querySelector('.background-target-selector.active')?.dataset.bgTarget || 'main';
+            document.querySelectorAll('.gradient-content-wrapper').forEach(w => {
+                w.style.display = w.dataset.bgTypeTarget === activeBgTarget ? 'block' : 'none';
+            });
         }
         renderCVPreview();
     }
