@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
+    // Hacemos una copia profunda del estado inicial para poder restaurarlo.
+    const defaultCvData = JSON.parse(JSON.stringify(cvData));
+
     // Objeto para almacenar los gradientes cargados por categoría
     let loadedGradients = {
         raya: [],
@@ -74,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formWrapper = document.getElementById('form-section-wrapper');
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const downloadHtmlBtn = document.getElementById('download-html-btn');
+    const resetCvBtn = document.getElementById('reset-cv-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
     const saveNotificationEl = document.getElementById('save-notification');
 
@@ -319,6 +323,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedData = localStorage.getItem('cvProData');
         if (savedData) {
             Object.assign(cvData, JSON.parse(savedData));
+        }
+    };
+
+    const resetCvData = () => {
+        const confirmed = confirm("¿Estás seguro de que quieres limpiar todo el formulario? Se perderán todos los cambios y se volverá a los datos de ejemplo.");
+        if (confirmed) {
+            // Restauramos cvData al estado por defecto
+            cvData = JSON.parse(JSON.stringify(defaultCvData));
+            // Guardamos el estado reseteado
+            saveState();
+            // Volvemos a la pantalla de bienvenida
+            setActiveSection('welcome');
+            renderCVPreview();
         }
     };
     const renderForm = (html) => {
@@ -630,6 +647,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const action = getActionFromElement(button);
 
         const actionHandlers = {
+            switchAvatarTab: (btn) => {
+                const parent = btn.closest('.form-section');
+                if (!parent) return;
+
+                // Actualizar estado
+                cvData.avatar.type = btn.dataset.type;
+
+                // Actualizar UI
+                parent.querySelectorAll('.avatar-tab').forEach(tab => tab.classList.remove('active'));
+                btn.classList.add('active');
+                parent.querySelectorAll('.avatar-content').forEach(content => content.classList.toggle('active', content.dataset.content === btn.dataset.type));
+            },
             add: () => handleAddItem(section),
             delete: () => { cvData[section] = cvData[section].filter(i => i.id != button.dataset.id); },
             switchTab: () => { 
@@ -650,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (actionHandlers[action]) {
-            actionHandlers[action]();
+            actionHandlers[action](button); // Pasamos el botón al manejador
 
             // Un cambio de pestaña es solo una modificación de la UI; no se debe volver a renderizar todo el formulario.
             const isTabSwitchAction = action.toLowerCase().includes('tab');
@@ -666,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getActionFromElement = (el) => {
         if (el.dataset.action) return el.dataset.action;
-        const classMap = { 'avatar-tab': 'switchTab', 'icon-option': 'selectIcon', 'layout-card': 'selectLayout', 'color-dot': 'selectColor', 'gradient-swatch': 'selectGradient', 'gradient-tab': 'switchGradientTab', 'design-tab': 'switchDesignTab', 'palette-swatch': 'selectPalette' };
+        const classMap = { 'avatar-tab': 'switchAvatarTab', 'icon-option': 'selectIcon', 'layout-card': 'selectLayout', 'color-dot': 'selectColor', 'gradient-swatch': 'selectGradient', 'gradient-tab': 'switchGradientTab', 'design-tab': 'switchDesignTab', 'palette-swatch': 'selectPalette' };
         for (const className in classMap) {
             if (el.classList.contains(className)) return classMap[className];
         }
@@ -723,6 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         downloadPdfBtn.addEventListener('click', () => window.print());
         downloadHtmlBtn.addEventListener('click', downloadHtml);
+        resetCvBtn.addEventListener('click', resetCvData);
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();

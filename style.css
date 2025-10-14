@@ -38,6 +38,7 @@ body {
 .editor-panel { display: flex; flex-direction: column; height: 100vh; background-color: var(--color-white); border-right: 1px solid var(--color-border); position: relative; }
 .editor-header { padding: 2rem; flex-shrink: 0; border-bottom: 1px solid var(--color-border); }
 .main-title { display: flex; align-items: center; gap: 0.75rem; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); }
+.editor-header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
 .editor-header p { color: var(--color-muted-text); margin-top: 0.25rem; }
 .btn.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
 
@@ -71,6 +72,9 @@ body {
 .btn-primary { background-color: var(--primary-accent); color: var(--color-white); }
 .btn-secondary { background-color: var(--color-light-bg-alt); color: var(--color-dark-text); border: 1px solid var(--color-border); }
 .btn-secondary:hover { background-color: var(--color-light-bg); }
+.btn-destructive { background-color: var(--color-destructive); color: var(--color-white); border: 1px solid var(--color-destructive); }
+.btn-destructive:hover { background-color: color-mix(in srgb, var(--color-destructive) 85%, #000); border-color: color-mix(in srgb, var(--color-destructive) 85%, #000); }
+
 
 /* --- Secciones Específicas del Formulario --- */
 .colors { display: flex; gap: 0.5rem; align-items: center; }
@@ -198,9 +202,9 @@ input[type="color"]::-webkit-color-swatch { border: 2px solid var(--color-border
 /* --- Estilos de Notificación de Guardado --- */
 .save-notification {
     position: absolute;
-    bottom: 1.5rem;
+    top: 1.5rem;
     left: 50%;
-    transform: translate(-50%, 10px);
+    transform: translate(-50%, -10px);
     background-color: #28a745;
     color: white;
     padding: 0.7rem 1.2rem;
