@@ -112,6 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const shareCvBtn = document.getElementById('share-cv-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
     const saveNotificationEl = document.getElementById('save-notification');
+    const aboutBtn = document.getElementById('about-btn');
+    const aboutModal = document.getElementById('about-modal');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+
 
     let loadedIcons = [];
     let svgCache = {};
@@ -1079,6 +1083,14 @@ document.addEventListener('DOMContentLoaded', () => {
         shareCvBtn.addEventListener('click', handleShareClick);
         themeToggleBtn.addEventListener('click', handleThemeToggle);
         resetCvBtn.addEventListener('click', resetCvData);
+
+        aboutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            aboutModal.classList.add('show');
+        });
+        modalCloseBtn.addEventListener('click', () => aboutModal.classList.remove('show'));
+        aboutModal.addEventListener('click', (e) => { if (e.target === aboutModal) { aboutModal.classList.remove('show'); } });
+
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
