@@ -751,7 +751,23 @@ document.addEventListener('DOMContentLoaded', () => {
             loadIcons()
         ]);
 
-        downloadPdfBtn.addEventListener('click', () => window.print());
+        const handleDownloadPdf = () => {
+            // Guarda el título original del documento
+            const originalTitle = document.title;
+            
+            // Crea un nombre de archivo descriptivo a partir de los datos del CV
+            const firstName = cvData.personalInfo.firstName || 'CV';
+            const lastName = cvData.personalInfo.lastName || 'Profesional';
+            const newTitle = `CV_${firstName.replace(/ /g, '_')}_${lastName.replace(/ /g, '_')}`;
+            document.title = newTitle;
+
+            // Llama a la función de impresión del navegador
+            window.print();
+
+            // Restaura el título original después de que se cierra el diálogo de impresión
+            setTimeout(() => { document.title = originalTitle; }, 500);
+        };
+        downloadPdfBtn.addEventListener('click', handleDownloadPdf);
         downloadHtmlBtn.addEventListener('click', downloadHtml);
         resetCvBtn.addEventListener('click', resetCvData);
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => {
