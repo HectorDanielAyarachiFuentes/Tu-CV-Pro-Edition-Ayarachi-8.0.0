@@ -681,15 +681,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (actionHandlers[action]) {
             actionHandlers[action](button); // Pasamos el botón al manejador
 
-            // Un cambio de pestaña es solo una modificación de la UI; no se debe volver a renderizar todo el formulario.
-            const isTabSwitchAction = action.toLowerCase().includes('tab');
+            // Las acciones de cambio de pestaña solo modifican la UI, no los datos.
+            const isUiOnlyAction = action.toLowerCase().includes('tab');
 
             // Solo se vuelve a renderizar el formulario si la acción NO fue un cambio de pestaña (ej. para 'delete').
-            if (section && !isTabSwitchAction) {
+            if (section && !isUiOnlyAction) {
                 setActiveSection(section);
             }
 
-            updateAndRender();
+            // Solo guardamos y mostramos la notificación si la acción modificó datos.
+            if (!isUiOnlyAction) updateAndRender();
         }
     };
 
