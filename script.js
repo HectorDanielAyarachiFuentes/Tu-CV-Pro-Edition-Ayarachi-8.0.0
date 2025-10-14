@@ -360,6 +360,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const setActiveSection = (sectionName) => {
         if (!sectionName) return;
+        // Guardamos la sección activa en localStorage para recordarla
+        localStorage.setItem('cvProLastSection', sectionName);
+
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => item.classList.toggle('active', item.getAttribute('href') === `#${sectionName}`));
         
         const renderer = formRenderers[sectionName];
@@ -846,7 +849,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        setActiveSection('welcome');
+        // Carga la última sección visitada o 'welcome' por defecto
+        const lastSection = localStorage.getItem('cvProLastSection');
+        // Si estamos en modo solo-lectura, no es necesario activar ninguna sección del editor.
+        if (!document.body.classList.contains('read-only-mode')) {
+            setActiveSection(lastSection || 'welcome');
+        }
         renderCVPreview();
     }
 
