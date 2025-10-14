@@ -34,7 +34,12 @@ body {
 }
 
 /* --- Layout Principal --- */
-.cv-builder-container { display: grid; grid-template-columns: 450px 1fr; height: 100vh; }
+.cv-builder-container { 
+    display: grid; 
+    grid-template-columns: 450px 1fr; 
+    height: 100vh; 
+    transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .editor-panel { display: flex; flex-direction: column; height: 100vh; background-color: var(--color-white); border-right: 1px solid var(--color-border); position: relative; }
 .editor-header { padding: 2rem; flex-shrink: 0; border-bottom: 1px solid var(--color-border); }
 .main-title { display: flex; align-items: center; gap: 0.75rem; font-size: 1.75rem; font-weight: 700; color: var(--primary-accent); margin-right: auto; }
@@ -95,6 +100,13 @@ body {
 .btn-icon:hover { background-color: var(--color-light-bg-alt); }
 .theme-icon-sun { display: none; }
 .theme-icon-moon { display: block; }
+.icon-compress { display: none; }
+
+body.fullscreen-preview .icon-expand { display: none; }
+body.fullscreen-preview .icon-compress { display: block; }
+body.fullscreen-preview .cv-builder-container { grid-template-columns: 0 1fr; }
+body.fullscreen-preview .editor-panel { overflow: hidden; }
+
 .btn-destructive:hover { background-color: color-mix(in srgb, var(--color-destructive) 85%, #000); border-color: color-mix(in srgb, var(--color-destructive) 85%, #000); }
 
 

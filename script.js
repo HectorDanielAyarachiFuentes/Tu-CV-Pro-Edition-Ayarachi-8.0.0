@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadHtmlBtn = document.getElementById('download-html-btn');
     const resetCvBtn = document.getElementById('reset-cv-btn');
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const toggleFullscreenBtn = document.getElementById('toggle-fullscreen-btn');
     const shareCvBtn = document.getElementById('share-cv-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
     const saveNotificationEl = document.getElementById('save-notification');
@@ -777,6 +778,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('cvProEditorTheme', newTheme);
     };
 
+    const handleFullscreenToggle = () => {
+        document.body.classList.toggle('fullscreen-preview');
+    };
+
+
     const applySavedTheme = () => {
         const savedTheme = localStorage.getItem('cvProEditorTheme');
         if (savedTheme) {
@@ -1082,6 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadHtmlBtn.addEventListener('click', downloadHtml);
         shareCvBtn.addEventListener('click', handleShareClick);
         themeToggleBtn.addEventListener('click', handleThemeToggle);
+        toggleFullscreenBtn.addEventListener('click', handleFullscreenToggle);
         resetCvBtn.addEventListener('click', resetCvData);
 
         aboutBtn.addEventListener('click', (e) => {
