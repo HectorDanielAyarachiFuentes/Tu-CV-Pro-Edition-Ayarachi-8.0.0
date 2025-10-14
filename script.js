@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const downloadHtmlBtn = document.getElementById('download-html-btn');
     const resetCvBtn = document.getElementById('reset-cv-btn');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
     const shareCvBtn = document.getElementById('share-cv-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
     const saveNotificationEl = document.getElementById('save-notification');
@@ -103,10 +104,36 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const renderPersonalFormHTML = () => { const p=cvData.personalInfo; return `<div class="form-section" data-section="personal"><h2 class="section-title">Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName||''}"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName||''}"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title||''}"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email||''}"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone||''}"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address||''}"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website||''}"></div><div class="form-group"><label>Resumen</label><textarea name="summary" rows="5">${p.summary||''}</textarea></div></div>`; };
     const renderSkillsFormHTML = () => `<div class="form-section" data-section="skills"><h2 class="section-title">Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Python..."></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;">+ Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s=>`<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
-    const renderDynamicListFormHTML = (section, config) => `<div class="form-section" data-section="${section}"><h2 class="section-title">${config.title}</h2><p class="section-subtitle">${config.subtitle}</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="${section}">+ Añadir ${config.singularTitle}</button></div><div class="dynamic-list">${(cvData[section] || []).map(item=>`<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.position||item.degree||'Nuevo Elemento'}</h4><button class="btn-delete" data-action="delete" data-section="${section}" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-grid"><div class="form-group"><label>${config.field1}</label><input type="text" name="${config.name1}" value="${item[config.name1]||''}"></div><div class="form-group"><label>${config.field2}</label><input type="text" name="${config.name2}" value="${item[config.name2]||''}"></div></div><div class="form-grid"><div class="form-group"><label>Fecha Inicio</label><input type="month" name="startDate" value="${item.startDate||''}"></div><div class="form-group"><label>Fecha Fin</label><input type="month" name="endDate" value="${item.endDate||''}" ${item.current?'disabled':''}></div></div><div class="form-group" style="font-size:.9rem;"><label style="display:flex;align-items:center;gap:.5rem;"><input type="checkbox" name="current" ${item.current?'checked':''}> Actualmente aquí</label></div><div class="form-group"><label>Descripción</label><textarea name="description" rows="4">${item.description||''}</textarea></div></div>`).join('')}</div></div>`;
+    const renderDynamicListFormHTML = (section, config) => {
+        const descriptionPlaceholder = section === 'experience'
+            ? 'Ej: \n- Lideré el desarrollo del nuevo módulo de reportes.\n- Optimicé las consultas a la base de datos, mejorando el rendimiento en un 40%.\n- Implementé un pipeline de CI/CD con GitHub Actions.'
+            : 'Ej: \n- Proyecto final sobre análisis de datos con Python.\n- Mención honorífica por promedio académico.';
+
+        return `<div class="form-section" data-section="${section}">
+            <h2 class="section-title">${config.title}</h2>
+            <p class="section-subtitle">${config.subtitle}</p>
+            <div class="add-item-container">
+                <button class="btn btn-secondary" data-action="add" data-section="${section}">+ Añadir ${config.singularTitle}</button>
+            </div>
+            <div class="dynamic-list">${(cvData[section] || []).map(item => `
+                <div class="item" data-id="${item.id}">
+                    <div class="item-header">
+                        <h4>${item.position || item.degree || 'Nuevo Elemento'}</h4>
+                        <button class="btn-delete" data-action="delete" data-section="${section}" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                    <div class="form-group"><label>${config.field1}</label><input type="text" name="${config.name1}" value="${item[config.name1] || ''}"></div>
+                    <div class="form-group"><label>${config.field2}</label><input type="text" name="${config.name2}" value="${item[config.name2] || ''}"></div>
+                    <div class="form-group"><label>Fecha Inicio</label><input type="month" name="startDate" value="${item.startDate || ''}"></div>
+                    <div class="form-group"><label>Fecha Fin</label><input type="month" name="endDate" value="${item.endDate || ''}" ${item.current ? 'disabled' : ''}></div>
+                    <div class="form-group" style="font-size:.9rem;"><label style="display:flex;align-items:center;gap:.5rem;"><input type="checkbox" name="current" ${item.current ? 'checked' : ''}> Actualmente aquí</label></div>
+                    <div class="form-group"><label>Descripción y Logros</label><textarea name="description" rows="4" placeholder="${descriptionPlaceholder}">${item.description || ''}</textarea></div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    };
     const renderImpactsFormHTML = () => `<div class="form-section" data-section="impacts"><h2 class="section-title">Impacto Clave</h2><p class="section-subtitle">Añade tus logros más importantes y cuantificables.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="impacts">+ Añadir Logro</button></div><div class="dynamic-list">${(cvData.impacts || []).map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>Logro Clave</h4><button class="btn-delete" data-action="delete" data-section="impacts" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-group"><label>Descripción del logro</label><textarea name="description" rows="3">${item.description || ''}</textarea></div></div>`).join('')}</div></div>`;
     const renderPortfolioFormHTML = () => `<div class="form-section" data-section="portfolio"><h2 class="section-title">Portafolio</h2><p class="section-subtitle">Muestra tus mejores trabajos visuales.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="portfolio">+ Añadir Proyecto</button></div><div class="dynamic-list">${cvData.portfolio.map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.title || 'Nuevo Proyecto'}</h4><button class="btn-delete" data-action="delete" data-section="portfolio" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div style="display: flex; gap: 1rem; align-items: flex-start;"><img src="${item.img || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);" class="portfolio-preview"><div style="flex-grow: 1;"><div class="form-group"><label>Título del Proyecto</label><input type="text" name="title" value="${item.title || ''}"></div><div class="form-group" style="margin-bottom:0;"><label>URL de la Imagen</label><input type="text" name="img" value="${item.img || ''}" placeholder="https://ejemplo.com/imagen.png"></div></div></div></div>`).join('')}</div></div>`;
-    const renderFooterFormHTML = () => `<div class="form-section" data-section="footer"><h2 class="section-title">Pie de Página</h2><p class="section-subtitle">Añade enlaces o texto final.</p><form id="footer-form" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;"><div class="form-grid"><div class="form-group" style="margin:0;"><label for="footer-item-type">Tipo</label><select id="footer-item-type">${Object.keys(templateHelpers.footerIcons).map(k => `<option value="${k}">${k.charAt(0).toUpperCase() + k.slice(1)}</option>`).join('')}</select></div><div class="form-group" style="margin:0;"><label for="footer-item-label">Etiqueta (opcional)</label><input id="footer-item-label" placeholder="LinkedIn"></div></div><div class="form-group" style="margin:0;"><label for="footer-item-value">Valor</label><input id="footer-item-value" placeholder="tu-usuario"></div><button type="button" class="btn btn-secondary" data-action="add" data-section="footer" style="align-self: flex-start;">+ Añadir Elemento</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="footer-list" style="display:flex;flex-direction:column; gap:0.5rem;">${cvData.footer.map(f=>`<div class="footer-item" style="background:#f8f9fa; border:1px solid #eee;" data-id="${f.id}"> ${templateHelpers.footerIcons[f.type]} <span>${f.label||''}</span> <p>${f.value}</p> <button class="btn-delete" style="margin-left:auto;" data-action="delete" data-section="footer" data-id="${f.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
+    const renderFooterFormHTML = () => `<div class="form-section" data-section="footer"><h2 class="section-title">Pie de Página</h2><p class="section-subtitle">Añade enlaces o texto final.</p><form id="footer-form" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;"><div class="form-grid"><div class="form-group" style="margin:0;"><label for="footer-item-type">Tipo</label><select id="footer-item-type">${Object.keys(templateHelpers.footerIcons).map(k => `<option value="${k}">${k.charAt(0).toUpperCase() + k.slice(1)}</option>`).join('')}</select></div><div class="form-group" style="margin:0;"><label for="footer-item-label">Etiqueta (opcional)</label><input id="footer-item-label" placeholder="LinkedIn"></div></div><div class="form-group" style="margin:0;"><label for="footer-item-value">Valor</label><input id="footer-item-value" placeholder="tu-usuario"></div><button type="button" class="btn btn-secondary" data-action="add" data-section="footer" style="align-self: flex-start;">+ Añadir Elemento</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="footer-list">${cvData.footer.map(f=>`<div class="footer-item" data-id="${f.id}"> ${templateHelpers.footerIcons[f.type]} <span>${f.label||''}</span> <p>${f.value}</p> <button class="btn-delete" data-action="delete" data-section="footer" data-id="${f.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
     const renderStructureFormHTML = () => {
         const sectionLabels = { summary: 'Resumen', experience: 'Experiencia', education: 'Educación', skills: 'Habilidades', impacts: 'Impacto Clave', portfolio: 'Portafolio' };
         return `<div class="form-section" data-section="structure"><h2 class="section-title">Organizar Secciones</h2><p class="section-subtitle">Arrastra y suelta las secciones para cambiar su orden en el CV.</p><div id="section-order-list">${cvData.sectionOrder.map(sectionKey => `<div class="draggable-item" draggable="true" data-section-key="${sectionKey}"><svg class="drag-handle" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg><span>${sectionLabels[sectionKey]}</span></div>`).join('')}</div></div>`;
@@ -222,8 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formRenderers.avatar = () => renderForm(renderAvatarFormHTML());
         formRenderers.personal = () => renderForm(renderPersonalFormHTML());
         formRenderers.skills = () => renderForm(renderSkillsFormHTML());
-        formRenderers.experience = () => renderForm(renderDynamicListFormHTML('experience', {title:'Experiencia Laboral', singularTitle: 'Experiencia', subtitle:'Describe tus roles anteriores.', field1:'Cargo', name1:'position', field2:'Empresa', name2:'company'}));
-        formRenderers.education = () => renderForm(renderDynamicListFormHTML('education', {title:'Educación', singularTitle: 'Formación', subtitle:'Tu formación académica.', field1:'Título', name1:'degree', field2:'Institución', name2:'institution'}));
+        formRenderers.experience = () => renderForm(renderDynamicListFormHTML('experience', {title:'Experiencia Laboral', singularTitle: 'Experiencia', subtitle:'Detalla tus roles previos. ¡Enfócate en logros cuantificables para demostrar tu impacto!', field1:'Cargo', name1:'position', field2:'Empresa', name2:'company'}));
+        formRenderers.education = () => renderForm(renderDynamicListFormHTML('education', {title:'Educación', singularTitle: 'Formación', subtitle:'Incluye tus títulos, certificaciones y cursos más relevantes.', field1:'Título', name1:'degree', field2:'Institución', name2:'institution'}));
         formRenderers.impacts = () => renderForm(renderImpactsFormHTML());
         formRenderers.portfolio = () => renderForm(renderPortfolioFormHTML());
         formRenderers.footer = () => renderForm(renderFooterFormHTML());
@@ -595,6 +622,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const handleThemeToggle = () => {
+        const currentTheme = document.body.dataset.editorTheme || 'light';
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.body.dataset.editorTheme = newTheme;
+        localStorage.setItem('cvProEditorTheme', newTheme);
+    };
+
+    const applySavedTheme = () => {
+        const savedTheme = localStorage.getItem('cvProEditorTheme');
+        if (savedTheme) {
+            document.body.dataset.editorTheme = savedTheme;
+        }
+    };
+
     // --- 4a. EVENT HANDLERS (REFACTORIZADO) ---
 
     // Manejadores para el evento 'input'
@@ -788,6 +829,8 @@ document.addEventListener('DOMContentLoaded', () => {
             loadState(); // Cargar datos guardados si no hay datos compartidos
         }
 
+        applySavedTheme();
+
         await Promise.all([
             loadTemplates(),
             loadGradientPresets(),
@@ -812,6 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
         downloadPdfBtn.addEventListener('click', handleDownloadPdf);
         downloadHtmlBtn.addEventListener('click', downloadHtml);
         shareCvBtn.addEventListener('click', handleShareClick);
+        themeToggleBtn.addEventListener('click', handleThemeToggle);
         resetCvBtn.addEventListener('click', resetCvData);
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
