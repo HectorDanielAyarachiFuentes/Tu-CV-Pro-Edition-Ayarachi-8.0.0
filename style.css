@@ -104,9 +104,18 @@ body {
 
 body.fullscreen-preview .icon-expand { display: none; }
 body.fullscreen-preview .icon-compress { display: block; }
-body.fullscreen-preview .cv-builder-container { grid-template-columns: 0 1fr; }
-body.fullscreen-preview .editor-panel { overflow: hidden; }
 
+/* 
+  Modo pantalla completa:
+  - Oculta el panel del editor (si está visible) cambiando la estructura del grid.
+  - Esto solo debe aplicarse cuando NO estamos en modo de solo lectura, para evitar conflictos.
+*/
+body.fullscreen-preview:not(.read-only-mode) .cv-builder-container {
+    grid-template-columns: 0 1fr;
+}
+body.fullscreen-preview:not(.read-only-mode) .editor-panel {
+    overflow: hidden;
+}
 .btn-destructive:hover { background-color: color-mix(in srgb, var(--color-destructive) 85%, #000); border-color: color-mix(in srgb, var(--color-destructive) 85%, #000); }
 
 
@@ -311,7 +320,7 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--color-border
 .read-only-mode .editor-panel { display: none; }
 .read-only-mode .cv-builder-container { grid-template-columns: 1fr; }
 .read-only-mode .preview-header { justify-content: flex-end; }
-.read-only-mode #share-cv-btn, .read-only-mode #reset-cv-btn { display: none; }
+.read-only-mode #share-cv-btn, .read-only-mode #reset-cv-btn, .read-only-mode #toggle-fullscreen-btn { display: none; }
 
 /* --- Tema Oscuro para el Editor --- */
 [data-editor-theme="dark"] .editor-panel {
