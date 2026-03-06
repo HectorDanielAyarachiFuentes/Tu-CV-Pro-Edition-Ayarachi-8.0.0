@@ -130,6 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let loadedIcons = [];
     let svgCache = {};
+    const aboutAudio = new Audio('Dulce-song/Dulce-song.mp3');
+
 
     // --- 3. TEMPLATE & FORM FUNCTIONS ---
     let templates = {};
@@ -1242,14 +1244,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 const themeColor = cvData.themeColor || '#444';
                 const textCol = inSidebar ? '#fff' : '#444';
                 itemHtml = `
-                    <div style="margin-bottom:${inSidebar ? '0.6rem' : '1rem'}; break-inside:avoid;">
+                    <div style="margin-bottom:${inSidebar ? '0.6rem' : '1.5rem'}; break-inside:avoid;">
                         <div style="font-weight:700; font-size:${inSidebar ? '0.85rem' : '0.95rem'}; color:${inSidebar ? textCol : themeColor};">NUEVO ÍTEM</div>
                         <div style="font-size:${inSidebar ? '0.8rem' : '0.85rem'}; color:${textCol}; opacity:0.9;">Descripción...</div>
                     </div>
                 `;
             }
 
-            document.execCommand('insertHTML', false, itemHtml);
+            // Para asegurar que el ítem baje y no se quede pegado a la línea anterior
+            const needsInitialBreak = selection && selection.anchorOffset > 0;
+            const prefix = needsInitialBreak ? '<div><br></div>' : '';
+            const finalFullHtml = `${prefix}<div style="display:block; width:100%; clear:both;">${itemHtml}</div>`;
+
+            document.execCommand('insertHTML', false, finalFullHtml);
         });
         inlineEditorAddSubsectionBtn.addEventListener('mousedown', (e) => e.preventDefault());
     };
@@ -1293,7 +1300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     setActiveSection('design'); // Re-render form to update color previews
                 } else if (target.dataset.bgInputTarget) {
                     const targetType = target.dataset.bgInputTarget; // 'main' or 'sidebar'
-                    cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`] = target.value;
+                    cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)} `] = target.value;
                 }
             }
         };
@@ -1431,7 +1438,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resetColors: () => Object.assign(cvData, colorPalettes[0]),
             selectGradient: () => {
                 const targetType = button.closest('.gradient-content-wrapper').dataset.bgTypeTarget;
-                const propertyName = `background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`;
+                const propertyName = `background${targetType.charAt(0).toUpperCase() + targetType.slice(1)} `;
                 cvData[propertyName] = button.dataset.gradientValue;
             },
             switchBgTarget: () => {
@@ -1508,7 +1515,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tabElement.classList.add('active');
 
         parent.querySelectorAll(contentSelector).forEach(content => content.classList.remove('active'));
-        parent.querySelector(`${contentSelector}[data-content="${tabName}"]`)?.classList.add('active');
+        parent.querySelector(`${contentSelector} [data - content="${tabName}"]`)?.classList.add('active');
     };
 
     // --- 5. INITIALIZATION & EVENT LISTENERS ---
@@ -1579,7 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Crea un nombre de archivo descriptivo a partir de los datos del CV
             const firstName = cvData.personalInfo.firstName || 'CV';
             const lastName = cvData.personalInfo.lastName || 'Profesional';
-            const newTitle = `CV_${firstName.replace(/ /g, '_')}_${lastName.replace(/ /g, '_')}`;
+            const newTitle = `CV_${firstName.replace(/ /g, '_')}_${lastName.replace(/ /g, '_')} `;
             document.title = newTitle;
 
             // Llama a la función de impresión del navegador
@@ -1598,9 +1605,21 @@ document.addEventListener('DOMContentLoaded', () => {
         aboutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             aboutModal.classList.add('show');
+            aboutAudio.play().catch(err => console.log("Audio play blocked:", err));
         });
-        modalCloseBtn.addEventListener('click', () => aboutModal.classList.remove('show'));
-        aboutModal.addEventListener('click', (e) => { if (e.target === aboutModal) { aboutModal.classList.remove('show'); } });
+        modalCloseBtn.addEventListener('click', () => {
+            aboutModal.classList.remove('show');
+            aboutAudio.pause();
+            aboutAudio.currentTime = 0;
+        });
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                aboutModal.classList.remove('show');
+                aboutAudio.pause();
+                aboutAudio.currentTime = 0;
+            }
+        });
+
 
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
