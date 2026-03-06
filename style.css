@@ -1555,3 +1555,109 @@ input[type="color"]::-webkit-color-swatch {
 [data-editor-theme="dark"] .modal-close {
     color: #adb5bd;
 }
+
+/* -------------------------------------------------------------------------- */
+/* INLINE EDITOR TOOLBAR (Fullscreen)                                         */
+/* -------------------------------------------------------------------------- */
+#inline-editor-toolbar {
+    position: absolute;
+    top: 50%;
+    /* Se actualiza con JS */
+    left: 50%;
+    z-index: 1000;
+    background-color: var(--secondary-bg);
+    border-radius: var(--radius-lg);
+    padding: 0.25rem 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+#inline-editor-toolbar.inline-toolbar-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(0);
+}
+
+#inline-editor-toolbar.inline-toolbar-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(-10px);
+}
+
+.toolbar-btn {
+    background: none;
+    border: none;
+    color: var(--color-dark-text);
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.toolbar-btn:hover {
+    background-color: var(--primary-accent);
+    color: var(--color-white);
+}
+
+.toolbar-btn.active {
+    background-color: var(--primary-accent);
+    color: var(--color-white);
+}
+
+.toolbar-divider {
+    width: 1px;
+    height: 20px;
+    background-color: var(--border-color);
+    margin: 0 0.25rem;
+}
+
+.toolbar-color-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.25rem;
+}
+
+#inline-color-input {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: none;
+    overflow: hidden;
+}
+
+#inline-color-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#inline-color-input::-webkit-color-swatch {
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+}
+
+/* Indicador visual de que el texto es editable en pantalla completa */
+.fullscreen #cv-preview-wrapper[contenteditable="true"] {
+    outline: none;
+}
+
+.fullscreen #cv-preview-wrapper[contenteditable="true"]:hover {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary-accent) 20%, transparent);
+}
+
+/* Cuando se imprime, ocultamos el toolbar por si acaso */
+@media print {
+    #inline-editor-toolbar {
+        display: none !important;
+    }
+}

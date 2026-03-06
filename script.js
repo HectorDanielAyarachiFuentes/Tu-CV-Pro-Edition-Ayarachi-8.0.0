@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // --- 1. STATE MANAGEMENT ---
     let cvData = {
-        layout: 'classic', 
-        themeColor: '#dc3545', 
-        backgroundMain: '', 
+        layout: 'classic',
+        themeColor: '#dc3545',
+        backgroundMain: '',
         backgroundSidebar: '',
         // Propiedades para los colores del texto y elementos
         textColorDark: '#212529', // Para texto principal sobre fondos claros
@@ -12,16 +12,16 @@ document.addEventListener('DOMContentLoaded', () => {
         textColorMuted: '#6c757d', // Para subtítulos, fechas, etc.
         sectionTitleColor: '', // Color para los títulos de sección. Si está vacío, usa el themeColor.
         sectionOrder: ['summary', 'experience', 'education', 'skills', 'impacts', 'portfolio'], // Orden personalizable
-        avatar: { type: 'initials', value: 'HD' }, 
-        personalInfo: { 
-            firstName: 'Hector Daniel', 
-            lastName: 'Ayarachi Fuentes', 
-            title: 'Desarrollador de Software', 
-            email: 'mp4o@yahoo.com', 
-            phone: '2995056200', 
-            address: 'Neuquen, Argentina', 
-            website: 'linkedin.com/in/hector-daniel-ayarachi-fuentes/', 
-            summary: 'Soy un desarrollador de software con una sólida experiencia en la creación de aplicaciones web escalables y eficientes. Mi enfoque principal se centra en el desarrollo backend, donde tengo un profundo conocimiento de Python y el ecosistema de AWS. Además, he trabajado en proyectos de DevOps para mejorar la eficiencia y la automatización de los procesos de desarrollo.' 
+        avatar: { type: 'initials', value: 'HD' },
+        personalInfo: {
+            firstName: 'Hector Daniel',
+            lastName: 'Ayarachi Fuentes',
+            title: 'Desarrollador de Software',
+            email: 'mp4o@yahoo.com',
+            phone: '2995056200',
+            address: 'Neuquen, Argentina',
+            website: 'linkedin.com/in/hector-daniel-ayarachi-fuentes/',
+            summary: 'Soy un desarrollador de software con una sólida experiencia en la creación de aplicaciones web escalables y eficientes. Mi enfoque principal se centra en el desarrollo backend, donde tengo un profundo conocimiento de Python y el ecosistema de AWS. Además, he trabajado en proyectos de DevOps para mejorar la eficiencia y la automatización de los procesos de desarrollo.'
         },
         experience: [{ id: Date.now() + 1, position: 'Desarrollador Backend Senior', company: 'Tech Solutions Inc.', startDate: '2020-02', endDate: '', current: true, description: '- Lideré el desarrollo del microservicio de pagos.\n- Optimicé consultas a la base de datos, mejorando el rendimiento en un 40%.\n- Implementé pipelines de CI/CD con Jenkins y Docker.' }],
         education: [{ id: Date.now() + 2, degree: 'Ingeniería en Sistemas de Información', institution: 'Universidad Tecnológica Nacional', startDate: '2014-04', endDate: '2020-01', current: false, description: 'Proyecto final sobre optimización de redes neuronales.' }],
@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: Date.now() + 14, description: 'Reduje los costos de infraestructura en AWS en un 25% mediante la optimización de instancias EC2.' }
         ],
         footer: [
-            { id: Date.now() + 7, type: 'email', label: '', value: 'mp4o@yahoo.com'},
-            { id: Date.now() + 8, type: 'linkedin', label: 'LinkedIn', value: 'in/hector-daniel-ayarachi-fuentes/'},
-            { id: Date.now() + 9, type: 'text', label: '', value: 'Referencias disponibles a petición.'}
+            { id: Date.now() + 7, type: 'email', label: '', value: 'mp4o@yahoo.com' },
+            { id: Date.now() + 8, type: 'linkedin', label: 'LinkedIn', value: 'in/hector-daniel-ayarachi-fuentes/' },
+            { id: Date.now() + 9, type: 'text', label: '', value: 'Referencias disponibles a petición.' }
         ],
         portfolio: [
             { id: Date.now() + 10, img: 'https://github.com/HectorDanielAyarachiFuentes/Tu-CV-Pro/blob/main/img/portafolio-img.jpeg?raw=true', title: 'Diseño de App Móvil' },
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Lavanda', accent: '#967bb6', dark: '#483263', light: '#ffffff', muted: '#b1a1c9', title: '' },
         { name: 'Grafito', accent: '#343a40', dark: '#000000', light: '#f8f9fa', muted: '#adb5bd', title: '' },
         { name: 'Vino Tinto', accent: '#800020', dark: '#33000d', light: '#ffffff', muted: '#a64059', title: '' },
-        { name:- 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779' },
+        { name: - 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779' },
         { name: 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779', title: '' },
         { name: 'Cereza', accent: '#d2042d', dark: '#4f0111', light: '#ffffff', muted: '#d16078', title: '' },
         { name: 'Acero', accent: '#4682B4', dark: '#1c3447', light: '#ffffff', muted: '#7da7c9', title: '' },
@@ -113,6 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const shareCvBtn = document.getElementById('share-cv-btn');
     const cvPreviewWrapper = document.getElementById('cv-preview-wrapper');
     const saveNotificationEl = document.getElementById('save-notification');
+    const inlineEditorToolbar = document.getElementById('inline-editor-toolbar');
+    const inlineColorInput = document.getElementById('inline-color-input');
     const aboutBtn = document.getElementById('about-btn');
     const aboutModal = document.getElementById('about-modal');
     const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -120,11 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let loadedIcons = [];
     let svgCache = {};
-    
+
     // --- 3. TEMPLATE & FORM FUNCTIONS ---
-    let templates = {}; 
+    let templates = {};
     const formRenderers = {};
-    
+
     // --- 3a. FORM RENDERER HELPERS ---
     // Funciones que generan el HTML para cada sección del formulario.
     // Esto hace que la función `buildFormRenderers` sea más limpia.
@@ -144,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             </div>`;
-        
+
         // Estado local para la pestaña de diseño
 
         const renderBackgroundSelector = (targetType, label) => `
@@ -173,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="design-content" data-content="colors">
                 <div class="subsection-title" style="margin-top:0;">Color de Acento</div>
                 <p class="subsection-description">Elige el color principal para encabezados, íconos y otros detalles destacados de tu CV.</p>
-                <div class="colors"><div class="color-dot ${cvData.themeColor==='#0d6efd'?'active':''}" data-color-value="#0d6efd" style="background:#0d6efd"></div><div class="color-dot ${cvData.themeColor==='#198754'?'active':''}" data-color-value="#198754" style="background:#198754"></div><div class="color-dot ${cvData.themeColor==='#6f42c1'?'active':''}" data-color-value="#6f42c1" style="background:#6f42c1"></div><div class="color-dot ${cvData.themeColor==='#dc3545'?'active':''}" data-color-value="#dc3545" style="background:#dc3545"></div><div class="color-dot ${cvData.themeColor==='#525f7f'?'active':''}" data-color-value="#525f7f" style="background:#525f7f"></div><div class="color-dot ${cvData.themeColor==='#e83e8c'?'active':''}" data-color-value="#e83e8c" style="background:#e83e8c"></div><input type="color" id="custom-color-picker" value="${cvData.themeColor}"></div>
+                <div class="colors"><div class="color-dot ${cvData.themeColor === '#0d6efd' ? 'active' : ''}" data-color-value="#0d6efd" style="background:#0d6efd"></div><div class="color-dot ${cvData.themeColor === '#198754' ? 'active' : ''}" data-color-value="#198754" style="background:#198754"></div><div class="color-dot ${cvData.themeColor === '#6f42c1' ? 'active' : ''}" data-color-value="#6f42c1" style="background:#6f42c1"></div><div class="color-dot ${cvData.themeColor === '#dc3545' ? 'active' : ''}" data-color-value="#dc3545" style="background:#dc3545"></div><div class="color-dot ${cvData.themeColor === '#525f7f' ? 'active' : ''}" data-color-value="#525f7f" style="background:#525f7f"></div><div class="color-dot ${cvData.themeColor === '#e83e8c' ? 'active' : ''}" data-color-value="#e83e8c" style="background:#e83e8c"></div><input type="color" id="custom-color-picker" value="${cvData.themeColor}"></div>
                 
                 <div class="subsection-title">Paletas Predeterminadas</div>
                 <p class="subsection-description">Acelera tu diseño seleccionando un esquema de color completo (acento, textos, etc.) con un solo clic.</p>
@@ -204,11 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return html;
     };
     const renderAvatarFormHTML = () => {
-        const { type, value } = cvData.avatar || {type:'initials', value:''};
-        return `<div class="form-section" data-section="avatar"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8"/><path d="M18.5 22a7.1 7.1 0 0 0-13 0"/></svg>Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte visualmente en tu CV.</p><div class="avatar-tabs"><div class="avatar-tab ${type==='none'?'active':''}" data-type="none">Nada</div><div class="avatar-tab ${type==='photo'?'active':''}" data-type="photo">Foto</div><div class="avatar-tab ${type==='url'?'active':''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type==='initials'?'active':''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type==='icon'?'active':''}" data-type="icon">Icono</div><div class="avatar-tab ${type==='svg'?'active':''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type==='quote'?'active':''}" data-type="quote">Cita</div><div class="avatar-tab ${type==='qr'?'active':''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type==='none'?'active':''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type==='photo'?'active':''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type==='photo'&&value?value:'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type==='photo'&&value?'<button id="remove-photo-btn" class="btn">Eliminar Foto</button>':''}</div></div></div><div class="avatar-content ${type==='url'?'active':''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type==='url'?value:''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type==='initials'?'active':''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type==='initials'?value:''}" placeholder="Ej: AF"></div></div><div class="avatar-content ${type==='icon'?'active':''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${loadedIcons.map(iconPath =>`<div class="icon-option ${type==='icon' && value===iconPath ? 'active' : ''}" data-icon-path="${iconPath}"><img src="${iconPath}" alt="icon" style="width:36px; height:36px;"/></div>`).join('')}</div></div><div class="avatar-content ${type==='svg'?'active':''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type==='svg'?value:''}</textarea></div></div><div class="avatar-content ${type==='quote'?'active':''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type==='quote'?value:''}</textarea></div></div><div class="avatar-content ${type==='qr'?'active':''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type==='qr'?value:''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`;
+        const { type, value } = cvData.avatar || { type: 'initials', value: '' };
+        return `<div class="form-section" data-section="avatar"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11a4 4 0 1 0 0-8a4 4 0 0 0 0 8"/><path d="M18.5 22a7.1 7.1 0 0 0-13 0"/></svg>Tu Avatar Profesional</h2><p class="section-subtitle">Elige cómo quieres presentarte visualmente en tu CV.</p><div class="avatar-tabs"><div class="avatar-tab ${type === 'none' ? 'active' : ''}" data-type="none">Nada</div><div class="avatar-tab ${type === 'photo' ? 'active' : ''}" data-type="photo">Foto</div><div class="avatar-tab ${type === 'url' ? 'active' : ''}" data-type="url">URL Imagen</div><div class="avatar-tab ${type === 'initials' ? 'active' : ''}" data-type="initials">Iniciales</div><div class="avatar-tab ${type === 'icon' ? 'active' : ''}" data-type="icon">Icono</div><div class="avatar-tab ${type === 'svg' ? 'active' : ''}" data-type="svg">Código SVG</div><div class="avatar-tab ${type === 'quote' ? 'active' : ''}" data-type="quote">Cita</div><div class="avatar-tab ${type === 'qr' ? 'active' : ''}" data-type="qr">Código QR</div></div><div class="avatar-content ${type === 'none' ? 'active' : ''}" data-content="none"><p style="color:var(--color-muted-text);">Se eliminará el avatar para un diseño más minimalista.</p></div><div class="avatar-content ${type === 'photo' ? 'active' : ''}" data-content="photo"><div style="display:flex;align-items:center;gap:1rem;"><img id="photo-preview" src="${type === 'photo' && value ? value : 'https://via.placeholder.com/120/e9ecef/6c757d?text=Foto'}"><div style="display:flex;flex-direction:column;gap:0.5rem;"><label for="photo-input" class="btn btn-secondary">Seleccionar Archivo</label><input type="file" id="photo-input" style="display:none;" accept="image/*">${type === 'photo' && value ? '<button id="remove-photo-btn" class="btn">Eliminar Foto</button>' : ''}</div></div></div><div class="avatar-content ${type === 'url' ? 'active' : ''}" data-content="url"><div class="form-group"><label for="image-url-input">URL de la imagen</label><input type="text" id="image-url-input" value="${type === 'url' ? value : ''}" placeholder="https://ejemplo.com/foto.jpg"></div></div><div class="avatar-content ${type === 'initials' ? 'active' : ''}" data-content="initials"><div class="form-group"><label for="initials-input">Tus Iniciales (1-3 caracteres)</label><input type="text" id="initials-input" maxlength="3" value="${type === 'initials' ? value : ''}" placeholder="Ej: AF"></div></div><div class="avatar-content ${type === 'icon' ? 'active' : ''}" data-content="icon"><p>Elige un ícono:</p><div class="icon-selector">${loadedIcons.map(iconPath => `<div class="icon-option ${type === 'icon' && value === iconPath ? 'active' : ''}" data-icon-path="${iconPath}"><img src="${iconPath}" alt="icon" style="width:36px; height:36px;"/></div>`).join('')}</div></div><div class="avatar-content ${type === 'svg' ? 'active' : ''}" data-content="svg"><div class="form-group"><label for="svg-code-input">Código SVG</label><textarea id="svg-code-input" placeholder='<svg width="24" ...></svg>' rows="5">${type === 'svg' ? value : ''}</textarea></div></div><div class="avatar-content ${type === 'quote' ? 'active' : ''}" data-content="quote"><div class="form-group"><label for="quote-input">Cita o Lema Profesional</label><textarea id="quote-input" placeholder="Ej: Pasión por crear soluciones eficientes..." rows="3">${type === 'quote' ? value : ''}</textarea></div></div><div class="avatar-content ${type === 'qr' ? 'active' : ''}" data-content="qr"><div class="form-group"><label for="qr-url-input">URL para el Código QR</label><input type="text" id="qr-url-input" value="${type === 'qr' ? value : ''}" placeholder="https://linkedin.com/in/tu-usuario"></div></div></div>`;
     };
-    const renderPersonalFormHTML = () => { const p=cvData.personalInfo; return `<div class="form-section" data-section="personal"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName||''}" placeholder="Ej: Ana"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName||''}" placeholder="Ej: García"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title||''}" placeholder="Ej: Desarrolladora de Software"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email||''}" placeholder="ej: ana.garcia@email.com"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone||''}" placeholder="Ej: +54 9 11 1234-5678"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address||''}" placeholder="Ej: Buenos Aires, Argentina"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website||''}" placeholder="linkedin.com/in/anagarcia"></div><div class="form-group"><label>Resumen</label><p class="subsection-description" style="margin-top:0; margin-bottom:0.5rem;">Un párrafo breve y potente que destaque tu experiencia clave, tus habilidades más fuertes y tus objetivos profesionales.</p><textarea name="summary" rows="5" placeholder="Ej: Desarrollador de Software con 5 años de experiencia en aplicaciones web de alto rendimiento. Experto en Python y AWS. Busco aplicar mis habilidades en un entorno desafiante para crear soluciones innovadoras.">${p.summary||''}</textarea></div></div>`; };
-    const renderSkillsFormHTML = () => `<div class="form-section" data-section="skills"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.97 3.23c.304-.76.99-.958 1.488-.523c.498.435.418 1.18-.184 1.577l-4.242 2.76A2 2 0 0 0 9 8.718V13a2 2 0 1 0 4 0V9m2-5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2zM8 21a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2z"/></svg>Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Ej: Python"></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s=>`<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
+    const renderPersonalFormHTML = () => { const p = cvData.personalInfo; return `<div class="form-section" data-section="personal"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Información Personal</h2><p class="section-subtitle">Los datos básicos para que puedan contactarte.</p><div class="form-grid"><div class="form-group"><label>Nombre(s)</label><input type="text" name="firstName" value="${p.firstName || ''}" placeholder="Ej: Ana"></div><div class="form-group"><label>Apellidos</label><input type="text" name="lastName" value="${p.lastName || ''}" placeholder="Ej: García"></div></div><div class="form-group"><label>Profesión</label><input type="text" name="title" value="${p.title || ''}" placeholder="Ej: Desarrolladora de Software"></div><div class="form-grid"><div class="form-group"><label>Email</label><input type="email" name="email" value="${p.email || ''}" placeholder="ej: ana.garcia@email.com"></div><div class="form-group"><label>Teléfono</label><input type="tel" name="phone" value="${p.phone || ''}" placeholder="Ej: +54 9 11 1234-5678"></div></div><div class="form-group"><label>Dirección</label><input type="text" name="address" value="${p.address || ''}" placeholder="Ej: Buenos Aires, Argentina"></div><div class="form-group"><label>Web (sin https://)</label><input type="text" name="website" value="${p.website || ''}" placeholder="linkedin.com/in/anagarcia"></div><div class="form-group"><label>Resumen</label><p class="subsection-description" style="margin-top:0; margin-bottom:0.5rem;">Un párrafo breve y potente que destaque tu experiencia clave, tus habilidades más fuertes y tus objetivos profesionales.</p><textarea name="summary" rows="5" placeholder="Ej: Desarrollador de Software con 5 años de experiencia en aplicaciones web de alto rendimiento. Experto en Python y AWS. Busco aplicar mis habilidades en un entorno desafiante para crear soluciones innovadoras.">${p.summary || ''}</textarea></div></div>`; };
+    const renderSkillsFormHTML = () => `<div class="form-section" data-section="skills"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.97 3.23c.304-.76.99-.958 1.488-.523c.498.435.418 1.18-.184 1.577l-4.242 2.76A2 2 0 0 0 9 8.718V13a2 2 0 1 0 4 0V9m2-5a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2zM8 21a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2z"/></svg>Habilidades</h2><p class="section-subtitle">Añade las tecnologías y competencias que dominas.</p><form id="skills-form" style="display:flex; gap:1rem; align-items:flex-end; margin-bottom:1.5rem;"><div class="form-group" style="flex-grow:1; margin-bottom:0;"><label for="skillName">Habilidad</label><input id="skillName" placeholder="Ej: Python"></div><div class="form-group" style="margin-bottom:0;"><label for="skillLevel">Nivel</label><select id="skillLevel"><option value="expert">Experto</option><option value="advanced">Avanzado</option><option value="intermediate">Intermedio</option><option value="beginner">Principiante</option></select></div><button type="submit" class="btn btn-secondary" style="height:fit-content;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Añadir</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="skills-list">${cvData.skills.map(s => `<div class="skill-badge" data-id="${s.id}">${s.name}<button class="btn-delete" data-action="delete" data-section="skills" data-id="${s.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
     const renderDynamicListFormHTML = (section, config) => {
         const descriptionPlaceholder = section === 'experience'
             ? 'Usa guiones (-) para listar tus logros. Cuantifica tus resultados siempre que sea posible.\n\nEj:\n- Lideré el desarrollo del nuevo módulo de reportes, resultando en un aumento del 20% en la satisfacción del cliente.\n- Optimicé las consultas a la base de datos, mejorando el rendimiento en un 40%.\n- Implementé un pipeline de CI/CD con GitHub Actions, reduciendo el tiempo de despliegue en un 75%.'
@@ -238,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const renderImpactsFormHTML = () => `<div class="form-section" data-section="impacts"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>Impacto Clave</h2><p class="section-subtitle">Añade tus logros más importantes y cuantificables.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="impacts"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Añadir Logro</button></div><div class="dynamic-list">${(cvData.impacts || []).map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>Logro Clave</h4><button class="btn-delete" data-action="delete" data-section="impacts" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div class="form-group"><label>Descripción del logro</label><textarea name="description" rows="3" placeholder="Ej: Reduje los costos de infraestructura en un 20% optimizando instancias EC2.">${item.description || ''}</textarea></div></div>`).join('')}</div></div>`;
     const renderPortfolioFormHTML = () => `<div class="form-section" data-section="portfolio"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>Portafolio</h2><p class="section-subtitle">Muestra tus mejores trabajos visuales.</p><div class="add-item-container"><button class="btn btn-secondary" data-action="add" data-section="portfolio"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Añadir Proyecto</button></div><div class="dynamic-list">${cvData.portfolio.map(item => `<div class="item" data-id="${item.id}"><div class="item-header"><h4>${item.title || 'Nuevo Proyecto'}</h4><button class="btn-delete" data-action="delete" data-section="portfolio" data-id="${item.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div><div style="display: flex; gap: 1rem; align-items: flex-start;"><img src="${item.img || 'https://via.placeholder.com/100x75/e9ecef/6c757d?text=Vista'}" style="width: 100px; height: 75px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--color-border);" class="portfolio-preview"><div style="flex-grow: 1;"><div class="form-group"><label>Título del Proyecto</label><input type="text" name="title" value="${item.title || ''}" placeholder="Ej: Diseño de App Móvil"></div><div class="form-group" style="margin-bottom:0;"><label>URL de la Imagen</label><input type="text" name="img" value="${item.img || ''}" placeholder="https://ejemplo.com/imagen.png"></div></div></div></div>`).join('')}</div></div>`;
-    const renderFooterFormHTML = () => `<div class="form-section" data-section="footer"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon><line x1="3" y1="22" x2="21" y2="22"></line></svg>Pie de Página</h2><p class="section-subtitle">Añade enlaces o texto final para tu CV.</p><form id="footer-form" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;"><div class="form-grid"><div class="form-group" style="margin:0;"><label for="footer-item-type">Tipo</label><select id="footer-item-type">${Object.keys(templateHelpers.footerIcons).map(k => `<option value="${k}">${k.charAt(0).toUpperCase() + k.slice(1)}</option>`).join('')}</select></div><div class="form-group" style="margin:0;"><label for="footer-item-label">Etiqueta (opcional)</label><input id="footer-item-label" placeholder="LinkedIn"></div></div><div class="form-group" style="margin:0;"><label for="footer-item-value">Valor</label><input id="footer-item-value" placeholder="tu-usuario"></div><button type="button" class="btn btn-secondary" data-action="add" data-section="footer" style="align-self: flex-start;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Añadir Elemento</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="footer-list">${cvData.footer.map(f=>`<div class="footer-item" data-id="${f.id}"> ${templateHelpers.footerIcons[f.type]} <span>${f.label||''}</span> <p>${f.value}</p> <button class="btn-delete" data-action="delete" data-section="footer" data-id="${f.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
+    const renderFooterFormHTML = () => `<div class="form-section" data-section="footer"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon><line x1="3" y1="22" x2="21" y2="22"></line></svg>Pie de Página</h2><p class="section-subtitle">Añade enlaces o texto final para tu CV.</p><form id="footer-form" style="display:flex; flex-direction:column; gap:1rem; margin-bottom:1.5rem;"><div class="form-grid"><div class="form-group" style="margin:0;"><label for="footer-item-type">Tipo</label><select id="footer-item-type">${Object.keys(templateHelpers.footerIcons).map(k => `<option value="${k}">${k.charAt(0).toUpperCase() + k.slice(1)}</option>`).join('')}</select></div><div class="form-group" style="margin:0;"><label for="footer-item-label">Etiqueta (opcional)</label><input id="footer-item-label" placeholder="LinkedIn"></div></div><div class="form-group" style="margin:0;"><label for="footer-item-value">Valor</label><input id="footer-item-value" placeholder="tu-usuario"></div><button type="button" class="btn btn-secondary" data-action="add" data-section="footer" style="align-self: flex-start;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Añadir Elemento</button></form><hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--color-border);"><div class="footer-list">${cvData.footer.map(f => `<div class="footer-item" data-id="${f.id}"> ${templateHelpers.footerIcons[f.type]} <span>${f.label || ''}</span> <p>${f.value}</p> <button class="btn-delete" data-action="delete" data-section="footer" data-id="${f.id}"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`).join('')}</div></div>`;
     const renderStructureFormHTML = () => {
         const sectionLabels = { summary: 'Resumen', experience: 'Experiencia', education: 'Educación', skills: 'Habilidades', impacts: 'Impacto Clave', portfolio: 'Portafolio' };
         return `<div class="form-section" data-section="structure"><h2 class="section-title"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>Organizar Secciones</h2><p class="section-subtitle">Arrastra y suelta las secciones para cambiar su orden en el CV.</p><div id="section-order-list">${cvData.sectionOrder.map(sectionKey => `<div class="draggable-item" draggable="true" data-section-key="${sectionKey}"><svg class="drag-handle" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg><span>${sectionLabels[sectionKey]}</span></div>`).join('')}</div></div>`;
@@ -275,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Funciones de renderizado de componentes ---
         renderAvatar: (data) => {
             const { avatar } = data;
-            if (!avatar || avatar.type === 'none') return ''; 
+            if (!avatar || avatar.type === 'none') return '';
             switch (avatar.type) {
                 case 'photo': case 'url': return `<img src="${avatar.value}" style="width:100%; height:100%; object-fit:cover;">`;
                 case 'initials': return `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background-color:rgba(0,0,0,0.2); font-size:3rem; font-weight:bold; color: white;">${avatar.value || templateHelpers.getInitials(data.personalInfo)}</div>`;
@@ -309,11 +311,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const content = ['text'].includes(item.type) ? `<span>${item.value}</span>` : `<a href="${link}" target="_blank" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">${icon} <span>${item.label || item.value}</span></a>`;
                 return `<div>${content}</div>`;
             };
-            return `<footer style="font-size:0.85rem; text-align:center; color:${finalOptions.color || data.textColorMuted}; background-color:${finalOptions.bgColor}; border-top:1px solid ${finalOptions.borderColor}; padding:${finalOptions.padding}; margin-top:auto; display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap: 1.5rem;">${data.footer.map(renderItem).join('')}</footer>`; 
+            return `<footer style="font-size:0.85rem; text-align:center; color:${finalOptions.color || data.textColorMuted}; background-color:${finalOptions.bgColor}; border-top:1px solid ${finalOptions.borderColor}; padding:${finalOptions.padding}; margin-top:auto; display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap: 1.5rem;">${data.footer.map(renderItem).join('')}</footer>`;
         },
-        renderExperienceItem: (e, data) => `<div style="margin-bottom:1.2rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.9rem;font-weight:600; color:${data.textColorDark};">${e.position||''}</h4><p style="font-size:.75rem;font-weight:500;color:${data.textColorMuted};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate,e.endDate,e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${data.textColorDark};">${e.company||''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.5; color:${data.textColorDark};">${e.description||''}</p></div>`,
-        renderEducationItem: (e, data) => `<div style="margin-bottom:1rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.9rem;font-weight:600; color:${data.textColorDark};">${e.degree||''}</h4><p style="font-size:.75rem;font-weight:500;color:${data.textColorMuted};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate,e.endDate,e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${data.textColorDark};">${e.institution||''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.5; color:${data.textColorDark};">${e.description||''}</p></div>`,
-        
+        renderExperienceItem: (e, data) => `<div style="margin-bottom:1.2rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.9rem;font-weight:600; color:${data.textColorDark};">${e.position || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${data.textColorMuted};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${data.textColorDark};">${e.company || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.5; color:${data.textColorDark};">${e.description || ''}</p></div>`,
+        renderEducationItem: (e, data) => `<div style="margin-bottom:1rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.9rem;font-weight:600; color:${data.textColorDark};">${e.degree || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${data.textColorMuted};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${data.textColorDark};">${e.institution || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.5; color:${data.textColorDark};">${e.description || ''}</p></div>`,
+
         // --- Funciones de renderizado de secciones ---
         renderGenericSection: (title, items, renderItemFn, color, style = '') => {
             const titleColor = cvData.sectionTitleColor || color;
@@ -322,13 +324,13 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         renderOrderedSections: (data, layoutName = '') => {
             const sectionRenderers = {
-                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{text: data.personalInfo.summary}] : [], item => `<p data-cv-color="textColorDark" style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${data.textColorDark};">${item.text}</p>`, opts.color || data.themeColor, opts.style),
+                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{ text: data.personalInfo.summary }] : [], item => `<p data-cv-color="textColorDark" style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${data.textColorDark};">${item.text}</p>`, opts.color || data.themeColor, opts.style),
                 experience: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Experiencia', data.experience, e => templateHelpers.renderExperienceItem(e, data), opts.color || data.themeColor, opts.style), // renderExperienceItem has its own color logic
                 education: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Educación', data.education, e => templateHelpers.renderEducationItem(e, data), opts.color || data.themeColor, opts.style), // renderEducationItem has its own color logic
                 skills: (opts = {}) => {
                     let content;
                     if (layoutName === 'academic') {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li>${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || data.textColorDark).replace('<div','<ul').replace('</div>','</ul>');
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li>${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || data.textColorDark).replace('<div', '<ul').replace('</div>', '</ul>');
                     } else if (layoutName === 'executive' || layoutName === 'creative') {
                         content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<span style="display:inline-block; background-color:#f1f1f1; color:${data.textColorDark}; padding: 0.3rem 0.8rem; border-radius: 4px; margin: 0.2rem; font-size:0.85rem;">${s.name}</span>`, opts.color || data.themeColor);
                     } else if (layoutName === 'technical') {
@@ -341,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-cv-color="textColorDark" style="background:#f4f4f4; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${data.textColorDark};">${item.description}</div>`, opts.color || data.themeColor, opts.style),
                 portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid #eee;"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${data.textColorDark};">${item.title}</p></div>`, opts.color || data.themeColor, opts.style || 'column-count:3; column-gap:1rem;')
             };
-    
+
             return data.sectionOrder
                 .map(key => sectionRenderers[key] ? sectionRenderers[key]() : '')
                 .join('');
@@ -355,8 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formRenderers.avatar = () => renderForm(renderAvatarFormHTML());
         formRenderers.personal = () => renderForm(renderPersonalFormHTML());
         formRenderers.skills = () => renderForm(renderSkillsFormHTML());
-        formRenderers.experience = () => renderForm(renderDynamicListFormHTML('experience', {title:'Experiencia Laboral', singularTitle: 'Experiencia', subtitle:'Detalla tus roles previos. ¡Enfócate en logros cuantificables para demostrar tu impacto!', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="6" rx="2"/><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>', field1:'Cargo', name1:'position', placeholder1: 'Ej: Desarrollador Backend', field2:'Empresa', name2:'company', placeholder2: 'Ej: Tech Solutions Inc.'}));
-        formRenderers.education = () => renderForm(renderDynamicListFormHTML('education', {title:'Educación', singularTitle: 'Formación', subtitle:'Incluye tus títulos, certificaciones y cursos más relevantes.', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7z"/><path d="m12 22-6-3v-5l6 4 6-4v5z"/><path d="M12 11V2"/></svg>', field1:'Título', name1:'degree', placeholder1: 'Ej: Ingeniería en Sistemas', field2:'Institución', name2:'institution', placeholder2: 'Ej: Universidad de Buenos Aires'}));
+        formRenderers.experience = () => renderForm(renderDynamicListFormHTML('experience', { title: 'Experiencia Laboral', singularTitle: 'Experiencia', subtitle: 'Detalla tus roles previos. ¡Enfócate en logros cuantificables para demostrar tu impacto!', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="6" rx="2"/><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>', field1: 'Cargo', name1: 'position', placeholder1: 'Ej: Desarrollador Backend', field2: 'Empresa', name2: 'company', placeholder2: 'Ej: Tech Solutions Inc.' }));
+        formRenderers.education = () => renderForm(renderDynamicListFormHTML('education', { title: 'Educación', singularTitle: 'Formación', subtitle: 'Incluye tus títulos, certificaciones y cursos más relevantes.', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7z"/><path d="m12 22-6-3v-5l6 4 6-4v5z"/><path d="M12 11V2"/></svg>', field1: 'Título', name1: 'degree', placeholder1: 'Ej: Ingeniería en Sistemas', field2: 'Institución', name2: 'institution', placeholder2: 'Ej: Universidad de Buenos Aires' }));
         formRenderers.impacts = () => renderForm(renderImpactsFormHTML());
         formRenderers.portfolio = () => renderForm(renderPortfolioFormHTML());
         formRenderers.footer = () => renderForm(renderFooterFormHTML());
@@ -368,14 +370,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('json-html/html.json');
             const templateStrings = await response.json();
-            
+
             // Convertir las cadenas de texto de vuelta a funciones
             for (const key in templateStrings) {
                 // Usamos el constructor de Function para evaluar la cadena de texto.
                 // Esto es seguro aquí porque estamos cargando nuestro propio código de confianza.
                 templates[key] = new Function('data', 'helpers', 'return ((' + templateStrings[key] + ')(data, helpers))');
             }
-            
+
             // Construimos las funciones del formulario DESPUÉS de cargar las plantillas
             buildFormRenderers();
 
@@ -423,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadedGradients.raya = await responseRaya.json();
             const gradientsJson = await responseGradients.json();
 
-            loadedGradients.simple = gradientsJson.map(g => 
+            loadedGradients.simple = gradientsJson.map(g =>
                 `linear-gradient(45deg, ${g.colors.join(', ')})`
             );
 
@@ -465,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirmed) {
             // Restauramos cvData al estado por defecto
             cvData = JSON.parse(JSON.stringify(defaultCvData));
-            
+
             // Limpiar cualquier clase de validación que haya quedado en el formulario
             document.querySelectorAll('.form-section input.invalid, .form-section textarea.invalid').forEach(el => {
                 el.classList.remove('invalid');
@@ -488,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const layout = cvData.layout || 'classic';
         cvPreviewWrapper.dataset.layout = layout;
         const templateFn = templates[layout];
-        if(typeof templateFn !== 'function') {
+        if (typeof templateFn !== 'function') {
             console.error(`La plantilla "${layout}" no existe o no es una función.`);
             cvPreviewWrapper.innerHTML = `<div style="padding:2rem; text-align:center; color:red;">Error: La plantilla seleccionada no se pudo cargar.</div>`;
             return;
@@ -496,14 +498,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Pasamos tanto los datos del CV como las funciones auxiliares a la plantilla
         cvPreviewWrapper.innerHTML = templateFn(cvData, templateHelpers);
     };
-    
+
     const setActiveSection = (sectionName) => {
         if (!sectionName) return;
         // Guardamos la sección activa en localStorage para recordarla
         localStorage.setItem('cvProLastSection', sectionName);
 
         document.querySelectorAll('.editor-nav .nav-item').forEach(item => item.classList.toggle('active', item.getAttribute('href') === `#${sectionName}`));
-        
+
         const renderer = formRenderers[sectionName];
         if (typeof renderer === 'function') {
             // Guardamos la pestaña activa antes de volver a renderizar, si estamos en la sección de diseño.
@@ -576,8 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const offset = e.clientY - box.top - box.height / 2;
                 return (offset < 0 && offset > closest.offset) ? { offset: offset, element: child } : closest;
             }, { offset: Number.NEGATIVE_INFINITY }).element;
-            
-            if (afterElement == null) { list.appendChild(draggedItem); } 
+
+            if (afterElement == null) { list.appendChild(draggedItem); }
             else { list.insertBefore(draggedItem, afterElement); }
         });
     };
@@ -779,7 +781,90 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const handleFullscreenToggle = () => {
-        document.body.classList.toggle('fullscreen-preview');
+        const isFullscreen = document.body.classList.toggle('fullscreen-preview');
+        // Toggle contenteditable en fullscreen para el editor inline
+        if (isFullscreen) {
+            cvPreviewWrapper.setAttribute('contenteditable', 'true');
+        } else {
+            cvPreviewWrapper.removeAttribute('contenteditable');
+            hideInlineToolbar();
+        }
+    };
+
+    // --- 3.5. LÓGICA DEL EDITOR INLINE (ESTILO WORD) ---
+    const showInlineToolbar = (rect) => {
+        if (!document.body.classList.contains('fullscreen-preview')) return; // Solo en fullscreen
+
+        // Calculamos la posición por encima de la selección
+        const toolbarHeight = 40; // Altura aproximada del toolbar
+        const padding = 10;
+
+        // Coordenadas relativas al viewport
+        let top = rect.top - toolbarHeight - padding;
+        let left = rect.left + (rect.width / 2);
+
+        // Ajustes si se sale de la pantalla
+        if (top < 0) { top = rect.bottom + padding; } // Mostrar debajo si no hay espacio arriba
+
+        // Ajustamos la posición considerando el scroll de la ventana (por si acaso, aunque en fullscreen de la app suele estar fijo)
+        inlineEditorToolbar.style.top = `${top + window.scrollY}px`;
+        inlineEditorToolbar.style.left = `${left + window.scrollX}px`;
+
+        inlineEditorToolbar.classList.remove('inline-toolbar-hidden');
+        inlineEditorToolbar.classList.add('inline-toolbar-visible');
+    };
+
+    const hideInlineToolbar = () => {
+        inlineEditorToolbar.classList.remove('inline-toolbar-visible');
+        inlineEditorToolbar.classList.add('inline-toolbar-hidden');
+    };
+
+    const handleSelectionChange = () => {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && !selection.isCollapsed) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+
+            // Verificamos si la selección pertenece al contenedor del CV
+            if (cvPreviewWrapper.contains(range.commonAncestorContainer)) {
+                showInlineToolbar(rect);
+                return;
+            }
+        }
+        hideInlineToolbar();
+    };
+
+    const setupInlineEditorListeners = () => {
+        // Escuchar cuando el usuario termina de seleccionar texto
+        cvPreviewWrapper.addEventListener('mouseup', handleSelectionChange);
+        cvPreviewWrapper.addEventListener('keyup', handleSelectionChange); // Para selección con teclado
+
+        // Ocultar si hace click fuera
+        document.addEventListener('mousedown', (e) => {
+            if (!inlineEditorToolbar.contains(e.target) && !cvPreviewWrapper.contains(e.target)) {
+                hideInlineToolbar();
+            }
+        });
+
+        // Botones de formato
+        inlineEditorToolbar.querySelectorAll('.toolbar-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault(); // Evitamos que el botón quite el foco del texto
+                const command = btn.dataset.command;
+                document.execCommand(command, false, null);
+
+                // Forzar actualización del layout por si cambió la altura
+                // setTimeout(() => handleSelectionChange(), 50);
+            });
+            // Evitar pérdida de foco al hacer mousedown
+            btn.addEventListener('mousedown', (e) => e.preventDefault());
+        });
+
+        // Color picker
+        inlineColorInput.addEventListener('input', (e) => {
+            document.execCommand('foreColor', false, e.target.value);
+        });
+        inlineColorInput.addEventListener('mousedown', (e) => e.preventDefault()); // Conservar selección
     };
 
 
@@ -829,11 +914,11 @@ document.addEventListener('DOMContentLoaded', () => {
         (inputHandlers[section] || inputHandlers[target.id])?.();
         updateAndRender();
     };
-    
+
     const validateInput = (target) => {
         const parentGroup = target.closest('.form-group');
         if (!parentGroup) return;
-    
+
         // Limpia el mensaje de error anterior
         let messageEl = parentGroup.querySelector('.validation-message');
         if (!messageEl) {
@@ -842,10 +927,10 @@ document.addEventListener('DOMContentLoaded', () => {
             parentGroup.appendChild(messageEl);
         }
         messageEl.textContent = '';
-    
+
         const validationType = target.name || target.id.replace('-input', '');
         const validator = validators[validationType];
-    
+
         if (validator) {
             const errorMessage = validator(target.value);
             if (errorMessage) {
@@ -938,8 +1023,8 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             add: () => handleAddItem(section),
             delete: () => { cvData[section] = cvData[section].filter(i => i.id != button.dataset.id); },
-            switchTab: () => { 
-                cvData.avatar.type = button.dataset.type; 
+            switchTab: () => {
+                cvData.avatar.type = button.dataset.type;
                 if (button.dataset.type === 'icon' && loadedIcons.length > 0) {
                     cvData.avatar.value = loadedIcons[0]; // Selecciona el primer ícono por defecto
                 }
@@ -1020,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             experience: { id: Date.now(), description: '' },
             education: { id: Date.now(), description: '' },
         }[section] || { id: Date.now() };
-        
+
         if (cvData[section]) cvData[section].push(newItem);
     };
 
@@ -1049,7 +1134,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const jsonString = atob(decodeURIComponent(sharedData));
                 const parsedData = JSON.parse(jsonString);
                 Object.assign(cvData, parsedData);
-                
+
                 // Activar modo solo lectura
                 document.body.classList.add('read-only-mode');
             } catch (error) {
@@ -1096,14 +1181,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ]).then(() => {
             // Si el usuario ya está en "diseño" o "avatar", forzamos un re-render para que aparezcan los íconos/fondos que acaban de cargar.
             const currentSection = localStorage.getItem('cvProLastSection');
-            if(currentSection === 'design' || currentSection === 'avatar') {
+            if (currentSection === 'design' || currentSection === 'avatar') {
                 setActiveSection(currentSection);
             }
         });
         const handleDownloadPdf = () => {
             // Guarda el título original del documento
             const originalTitle = document.title;
-            
+
             // Crea un nombre de archivo descriptivo a partir de los datos del CV
             const firstName = cvData.personalInfo.firstName || 'CV';
             const lastName = cvData.personalInfo.lastName || 'Profesional';
@@ -1136,6 +1221,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 setActiveSection(item.getAttribute('href').substring(1));
             });
         });
+
+        // Event Listeners para el Editor Inline (Fullscreen)
+        setupInlineEditorListeners();
 
         // --- Event Listeners Refactorizados ---
         formWrapper.addEventListener('input', (e) => {
@@ -1171,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.readAsDataURL(e.target.files[0]);
             }
         });
-        
+
         // Renderizado movido hacia arriba para ganar velocidad
     }
 
