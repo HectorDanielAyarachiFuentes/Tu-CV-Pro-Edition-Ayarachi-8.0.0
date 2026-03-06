@@ -1063,11 +1063,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
         applySavedTheme();
 
-        await Promise.all([
-            loadTemplates(),
+        // 1. Carga crítica que bloquea la interfaz (las plantillas)
+        await loadTemplates();
+
+        // 2. Renderiza la interfaz inicial con las plantillas cargadas
+        // Carga la última sección visitada o 'welcome' por defecto
+        const lastSection = localStorage.getItem('cvProLastSection');
+        // Si estamos en modo solo-lectura, no es necesario activar ninguna sección del editor.
+        if (!document.body.classList.contains('read-only-mode')) {
+            setActiveSection(lastSection || 'welcome');
+            // Asegurarse de que el selector de fondo correcto esté visible al cargar
+            const activeBgTarget = document.querySelector('.background-target-selector.active')?.dataset.bgTarget || 'main';
+            document.querySelectorAll('.gradient-content-wrapper').forEach(w => {
+                w.style.display = w.dataset.bgTypeTarget === activeBgTarget ? 'block' : 'none';
+            });
+
+            // Ejecutar validación en todos los campos al cargar una sección
+            document.querySelectorAll('.form-section.active input, .form-section.active textarea').forEach(input => {
+                validateInput(input);
+            });
+            // Y también para los rangos de fechas
+            document.querySelectorAll('.form-section.active .item').forEach(itemEl => {
+                validateDateRange(itemEl);
+            });
+        }
+        renderCVPreview();
+
+        // 3. Carga diferida (en segundo plano) de recursos menos urgentes
+        Promise.all([
             loadGradientPresets(),
             loadIcons()
-        ]);
+        ]).then(() => {
+            // Si el usuario ya está en "diseño" o "avatar", forzamos un re-render para que aparezcan los íconos/fondos que acaban de cargar.
+            const currentSection = localStorage.getItem('cvProLastSection');
+            if(currentSection === 'design' || currentSection === 'avatar') {
+                setActiveSection(currentSection);
+            }
+        });
         const handleDownloadPdf = () => {
             // Guarda el título original del documento
             const originalTitle = document.title;
@@ -1140,27 +1172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Carga la última sección visitada o 'welcome' por defecto
-        const lastSection = localStorage.getItem('cvProLastSection');
-        // Si estamos en modo solo-lectura, no es necesario activar ninguna sección del editor.
-        if (!document.body.classList.contains('read-only-mode')) {
-            setActiveSection(lastSection || 'welcome');
-            // Asegurarse de que el selector de fondo correcto esté visible al cargar
-            const activeBgTarget = document.querySelector('.background-target-selector.active')?.dataset.bgTarget || 'main';
-            document.querySelectorAll('.gradient-content-wrapper').forEach(w => {
-                w.style.display = w.dataset.bgTypeTarget === activeBgTarget ? 'block' : 'none';
-            });
-
-            // Ejecutar validación en todos los campos al cargar una sección
-            document.querySelectorAll('.form-section.active input, .form-section.active textarea').forEach(input => {
-                validateInput(input);
-            });
-            // Y también para los rangos de fechas
-            document.querySelectorAll('.form-section.active .item').forEach(itemEl => {
-                validateDateRange(itemEl);
-            });
-        }
-        renderCVPreview();
+        // Renderizado movido hacia arriba para ganar velocidad
     }
 
     init();
