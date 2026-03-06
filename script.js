@@ -886,15 +886,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add Section Button
         inlineEditorAddSectionBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            // Inyectamos una sección con formato genérico
-            // El color del título tomará el var(--section-title, var(--primary)) que ya usan las plantillas
-            const sectionHtml = `
-                <div style="margin-top: 1.5rem; margin-bottom: 1rem;">
-                    <h3 class="section-title" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">NUEVA SECCIÓN</h3>
-                    <p>Escribe aquí tu contenido...</p>
-                </div><br>
-            `;
-            document.execCommand('insertHTML', false, sectionHtml);
+            // Generamos el HTML de la nueva sección usando el helper de plantillas
+            // para que adopte exactamente los estilos de la plantilla y colores actuales.
+            const sectionHtml = templateHelpers.renderGenericSection(
+                'NUEVA SECCIÓN',
+                [{ text: 'Escribe aquí tu contenido...' }],
+                item => `<p style="font-size:.85rem; line-height:1.6; color:${cvData.textColorDark};">${item.text}</p>`,
+                cvData.themeColor
+            );
+            document.execCommand('insertHTML', false, sectionHtml + '<br>');
         });
         inlineEditorAddSectionBtn.addEventListener('mousedown', (e) => e.preventDefault());
     };
