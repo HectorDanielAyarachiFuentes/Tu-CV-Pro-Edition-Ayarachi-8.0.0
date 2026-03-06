@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveNotificationEl = document.getElementById('save-notification');
     const inlineEditorToolbar = document.getElementById('inline-editor-toolbar');
     const inlineColorInput = document.getElementById('inline-color-input');
+    const inlineEditorAddSectionBtn = document.getElementById('inline-editor-add-section-btn');
     const aboutBtn = document.getElementById('about-btn');
     const aboutModal = document.getElementById('about-modal');
     const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -799,16 +800,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const toolbarHeight = 40; // Altura aproximada del toolbar
         const padding = 10;
 
-        // Coordenadas relativas al viewport
-        let top = rect.top - toolbarHeight - padding;
-        let left = rect.left + (rect.width / 2);
+        // El toolbar es position: absolute dentro de .preview-panel
+        const container = inlineEditorToolbar.offsetParent || document.body;
+        const parentRect = container.getBoundingClientRect();
 
-        // Ajustes si se sale de la pantalla
-        if (top < 0) { top = rect.bottom + padding; } // Mostrar debajo si no hay espacio arriba
+        // Coordenadas relativas al contenedor padre
+        let top = (rect.top - parentRect.top) + container.scrollTop - toolbarHeight - padding;
+        let left = (rect.left - parentRect.left) + container.scrollLeft + (rect.width / 2);
 
-        // Ajustamos la posición considerando el scroll de la ventana (por si acaso, aunque en fullscreen de la app suele estar fijo)
-        inlineEditorToolbar.style.top = `${top + window.scrollY}px`;
-        inlineEditorToolbar.style.left = `${left + window.scrollX}px`;
+        // Ajustes si se sale por arriba del contenedor visible
+        if (top < container.scrollTop) {
+            top = (rect.bottom - parentRect.top) + container.scrollTop + padding;
+        }
+
+        inlineEditorToolbar.style.top = `${top}px`;
+        inlineEditorToolbar.style.left = `${left}px`;
 
         inlineEditorToolbar.classList.remove('inline-toolbar-hidden');
         inlineEditorToolbar.classList.add('inline-toolbar-visible');
@@ -821,13 +827,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleSelectionChange = () => {
         const selection = window.getSelection();
-        if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
 
             // Verificamos si la selección pertenece al contenedor del CV
             if (cvPreviewWrapper.contains(range.commonAncestorContainer)) {
-                showInlineToolbar(rect);
+                // Si la selección está colapsada (es solo un clic sin texto sombreado),
+                // calculamos un pequeño "rectángulo fantasma" para posicionar el tooltip.
+                let targetRect = rect;
+                if (rect.width === 0 && rect.height === 0) {
+                    const span = document.createElement('span');
+                    span.appendChild(document.createTextNode('\u200b')); // Zero-width space
+                    range.insertNode(span);
+                    targetRect = span.getBoundingClientRect();
+                    span.parentNode.removeChild(span);
+                }
+
+                showInlineToolbar(targetRect);
                 return;
             }
         }
@@ -865,6 +882,21 @@ document.addEventListener('DOMContentLoaded', () => {
             document.execCommand('foreColor', false, e.target.value);
         });
         inlineColorInput.addEventListener('mousedown', (e) => e.preventDefault()); // Conservar selección
+
+        // Add Section Button
+        inlineEditorAddSectionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Inyectamos una sección con formato genérico
+            // El color del título tomará el var(--section-title, var(--primary)) que ya usan las plantillas
+            const sectionHtml = `
+                <div style="margin-top: 1.5rem; margin-bottom: 1rem;">
+                    <h3 class="section-title" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">NUEVA SECCIÓN</h3>
+                    <p>Escribe aquí tu contenido...</p>
+                </div><br>
+            `;
+            document.execCommand('insertHTML', false, sectionHtml);
+        });
+        inlineEditorAddSectionBtn.addEventListener('mousedown', (e) => e.preventDefault());
     };
 
 
