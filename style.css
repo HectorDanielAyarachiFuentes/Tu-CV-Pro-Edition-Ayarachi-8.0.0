@@ -1663,3 +1663,236 @@ input[type="color"]::-webkit-color-swatch {
         display: none !important;
     }
 }
+
+/* -------------------------------------------------------------------------- */
+/* AVATAR EDITOR PANEL (Fullscreen)                                            */
+/* -------------------------------------------------------------------------- */
+#avatar-editor-panel {
+    position: absolute;
+    top: 80px;
+    left: 16px;
+    z-index: 1100;
+    width: 290px;
+    background: #1e2124;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    color: #f0f0f0;
+    font-family: inherit;
+}
+
+.avatar-panel-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0.96);
+}
+
+.avatar-panel-visible {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: scale(1);
+}
+
+.avatar-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    background: #17191c;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 700;
+    font-size: 0.87rem;
+    color: #f0f0f0;
+    letter-spacing: 0.01em;
+}
+
+.avatar-panel-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #999;
+    line-height: 1;
+    padding: 0.25rem 0.4rem;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.avatar-panel-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.avatar-panel-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.55rem 0.75rem;
+    background: #17191c;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avatar-panel-tab {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #bbb;
+    border-radius: 20px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.73rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.avatar-panel-tab.active {
+    background: var(--primary-accent, #dc3545);
+    border-color: var(--primary-accent, #dc3545);
+    color: #fff;
+    font-weight: 600;
+}
+
+.avatar-panel-tab:hover:not(.active) {
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #fff;
+}
+
+.avatar-panel-body {
+    padding: 0.75rem 0.9rem 0.5rem;
+}
+
+.avatar-panel-content {
+    display: none;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.avatar-panel-content.active {
+    display: flex;
+}
+
+.avatar-panel-content label {
+    font-size: 0.78rem;
+    color: #aaa;
+    margin-bottom: 0;
+}
+
+.avatar-panel-input {
+    width: 100%;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 7px;
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.07);
+    color: #f0f0f0;
+    box-sizing: border-box;
+    margin-top: 0.2rem;
+    font-family: inherit;
+}
+
+.avatar-panel-input:focus {
+    outline: none;
+    border-color: var(--primary-accent, #dc3545);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Icon grid inside avatar panel */
+.avatar-panel-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    max-height: 140px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.avatar-panel-icon-grid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.avatar-panel-icon-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+}
+
+.avatar-panel-icon-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.06);
+    transition: all 0.12s;
+}
+
+.avatar-panel-icon-option img {
+    width: 22px;
+    height: 22px;
+    filter: invert(1) brightness(0.85);
+}
+
+.avatar-panel-icon-option:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.avatar-panel-icon-option.selected {
+    background: var(--primary-accent, #dc3545);
+    border-color: var(--primary-accent, #dc3545);
+}
+
+
+.avatar-panel-input::placeholder {
+    color: #666;
+}
+
+#avatar-panel-apply-btn {
+    margin: 0.6rem 0.9rem 0.75rem;
+    width: calc(100% - 1.8rem);
+    background: var(--primary-accent, #dc3545);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+}
+
+#avatar-panel-apply-btn:hover {
+    opacity: 0.88;
+    transform: scale(0.99);
+}
+
+/* Indicador de avatar clickeable en fullscreen */
+.fullscreen-preview .cv-avatar-clickable {
+    cursor: pointer;
+    position: relative;
+}
+
+.fullscreen-preview .cv-avatar-clickable::after {
+    content: '✏️';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.fullscreen-preview .cv-avatar-clickable:hover::after {
+    opacity: 1;
+}

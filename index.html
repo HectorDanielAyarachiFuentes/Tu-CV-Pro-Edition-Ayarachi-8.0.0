@@ -339,7 +339,96 @@
                     </svg>
                     <span style="font-size: 0.75rem; margin-left: 0.25rem; font-weight: 600;">Sección</span>
                 </button>
+                <div class="toolbar-divider"></div>
+                <button class="toolbar-btn" id="inline-editor-add-subsection-btn" title="Añadir Subsección/Ítem">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span style="font-size: 0.75rem; margin-left: 0.25rem; font-weight: 600;">Subsección</span>
+                </button>
             </div>
+
+            <!-- Panel flotante para editar el avatar directamente en pantalla completa -->
+            <div id="avatar-editor-panel" class="avatar-panel-hidden">
+                <div class="avatar-panel-header">
+                    <span>✏️ Editar Avatar</span>
+                    <button id="avatar-panel-close-btn" class="avatar-panel-close">✕</button>
+                </div>
+                <div class="avatar-panel-tabs">
+                    <button class="avatar-panel-tab active" data-avatar-type="none">Nada</button>
+                    <button class="avatar-panel-tab" data-avatar-type="photo">Foto</button>
+                    <button class="avatar-panel-tab" data-avatar-type="url">URL Imagen</button>
+                    <button class="avatar-panel-tab" data-avatar-type="initials">Iniciales</button>
+                    <button class="avatar-panel-tab" data-avatar-type="icon">Icono</button>
+                    <button class="avatar-panel-tab" data-avatar-type="svg">Cód. SVG</button>
+                    <button class="avatar-panel-tab" data-avatar-type="quote">Cita</button>
+                    <button class="avatar-panel-tab" data-avatar-type="qr">Código QR</button>
+                </div>
+                <div class="avatar-panel-body">
+                    <!-- none -->
+                    <div class="avatar-panel-content active" data-avatar-content="none">
+                        <p
+                            style="color: var(--color-muted-text); font-size: 0.85rem; text-align:center; padding: 1rem 0;">
+                            Se ocultará el avatar.</p>
+                    </div>
+                    <!-- initials -->
+                    <div class="avatar-panel-content" data-avatar-content="initials">
+                        <label style="font-size:0.8rem; color:var(--color-muted-text);">Iniciales (1-3
+                            caracteres)</label>
+                        <input type="text" id="avatar-panel-initials" maxlength="3" placeholder="Ej: HD"
+                            class="avatar-panel-input">
+                    </div>
+                    <!-- photo -->
+                    <div class="avatar-panel-content" data-avatar-content="photo">
+                        <img id="avatar-panel-photo-preview" src=""
+                            style="width:80px;height:80px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 0.75rem;border:2px solid var(--color-border);">
+                        <label for="avatar-panel-photo-input" class="btn btn-secondary"
+                            style="width:100%;justify-content:center;">Seleccionar Foto</label>
+                        <input type="file" id="avatar-panel-photo-input" accept="image/*" style="display:none;">
+                    </div>
+                    <!-- url -->
+                    <div class="avatar-panel-content" data-avatar-content="url">
+                        <label style="font-size:0.8rem; color:var(--color-muted-text);">URL de la imagen</label>
+                        <input type="text" id="avatar-panel-url" placeholder="https://..." class="avatar-panel-input">
+                    </div>
+                    <!-- quote -->
+                    <div class="avatar-panel-content" data-avatar-content="quote">
+                        <label style="font-size:0.8rem; color:var(--color-muted-text);">Tu lema / cita
+                            profesional</label>
+                        <textarea id="avatar-panel-quote" rows="3" placeholder="Ej: Innovador por naturaleza..."
+                            class="avatar-panel-input"></textarea>
+                    </div>
+                    <!-- qr -->
+                    <div class="avatar-panel-content" data-avatar-content="qr">
+                        <label>URL para el Código QR</label>
+                        <input type="text" id="avatar-panel-qr" placeholder="https://linkedin.com/..."
+                            class="avatar-panel-input">
+                    </div>
+                    <!-- icon -->
+                    <div class="avatar-panel-content" data-avatar-content="icon">
+                        <label>Elige un ícono:</label>
+                        <div id="avatar-panel-icon-grid" class="avatar-panel-icon-grid">
+                            <!-- Populated dynamically by JS -->
+                            <p style="color:#888; font-size:0.8rem;">Cargando iconos...</p>
+                        </div>
+                    </div>
+                    <!-- svg -->
+                    <div class="avatar-panel-content" data-avatar-content="svg">
+                        <label>Código SVG</label>
+                        <textarea id="avatar-panel-svg" rows="4" placeholder='&lt;svg width="24"...&gt;&lt;/svg&gt;'
+                            class="avatar-panel-input"></textarea>
+                    </div>
+                </div>
+                <button id="avatar-panel-apply-btn" class="btn btn-primary"
+                    style="width:100%;margin-top:0.75rem;">Aplicar</button>
+            </div>
+
         </section>
     </div>
 

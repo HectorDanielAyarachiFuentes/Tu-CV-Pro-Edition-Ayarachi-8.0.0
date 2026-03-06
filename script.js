@@ -116,9 +116,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const inlineEditorToolbar = document.getElementById('inline-editor-toolbar');
     const inlineColorInput = document.getElementById('inline-color-input');
     const inlineEditorAddSectionBtn = document.getElementById('inline-editor-add-section-btn');
+    const inlineEditorAddSubsectionBtn = document.getElementById('inline-editor-add-subsection-btn');
     const aboutBtn = document.getElementById('about-btn');
     const aboutModal = document.getElementById('about-modal');
     const modalCloseBtn = document.getElementById('modal-close-btn');
+    // Avatar editor panel elements
+    const avatarEditorPanel = document.getElementById('avatar-editor-panel');
+    const avatarPanelCloseBtnEl = document.getElementById('avatar-panel-close-btn');
+    const avatarPanelApplyBtn = document.getElementById('avatar-panel-apply-btn');
+    const avatarPanelTabs = avatarEditorPanel ? avatarEditorPanel.querySelectorAll('.avatar-panel-tab') : [];
+    const avatarPanelContents = avatarEditorPanel ? avatarEditorPanel.querySelectorAll('.avatar-panel-content') : [];
 
 
     let loadedIcons = [];
@@ -345,9 +352,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid #eee;"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${data.textColorDark};">${item.title}</p></div>`, opts.color || data.themeColor, opts.style || 'column-count:3; column-gap:1rem;')
             };
 
-            return data.sectionOrder
-                .map(key => sectionRenderers[key] ? sectionRenderers[key]() : '')
-                .join('');
+            return [
+                ...data.sectionOrder
+                    .map(key => sectionRenderers[key] ? sectionRenderers[key]() : ''),
+                // Secciones personalizadas añadidas por el usuario (se adaptan a cada plantilla)
+                ...(data.customSections || []).map(cs =>
+                    templateHelpers.renderGenericSection(
+                        cs.title || 'NUEVA SECCIÓN',
+                        [{ text: cs.content || '' }],
+                        item => `<p style="font-size:.85rem; line-height:1.65; color:${data.textColorDark}; white-space:pre-wrap;">${item.text}</p>`,
+                        data.themeColor
+                    )
+                )
+            ].join('');
         }
     };
 
@@ -498,6 +515,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Pasamos tanto los datos del CV como las funciones auxiliares a la plantilla
         cvPreviewWrapper.innerHTML = templateFn(cvData, templateHelpers);
+
+        // Inyectar secciones personalizadas en el área principal del template renderizado.
+        // Esto cubre TODOS los templates, incluso los que no usan `renderOrderedSections`.
+        if (cvData.customSections && cvData.customSections.length > 0) {
+            // Buscamos el contenedor "main" de la plantilla; si no hay, usamos el primer hijo.
+            const mainEl = cvPreviewWrapper.querySelector('[data-cv-background="main"] main, [data-cv-background="main"]') ||
+                cvPreviewWrapper.querySelector('main') ||
+                cvPreviewWrapper.firstElementChild;
+            if (mainEl) {
+                const accentColor = cvData.themeColor || '#333';
+                const textColor = cvData.textColorDark || '#222';
+                const titleColor = cvData.sectionTitleColor || accentColor;
+                const customHtml = cvData.customSections.map(cs =>
+                    `<div style="margin-top:1.5rem;">
+                        <h3 style="font-family:var(--font-heading);font-size:1rem;font-weight:600;color:${titleColor};border-bottom:2px solid ${titleColor};padding-bottom:.25rem;margin-bottom:1rem;display:inline-block;text-transform:uppercase;">${cs.title || 'NUEVA SECCIÓN'}</h3>
+                        <p style="font-size:.85rem;line-height:1.65;color:${textColor};white-space:pre-wrap;">${cs.content || ''}</p>
+                    </div>`
+                ).join('');
+                mainEl.insertAdjacentHTML('beforeend', customHtml);
+            }
+        }
+
     };
 
     const setActiveSection = (sectionName) => {
@@ -786,13 +825,213 @@ document.addEventListener('DOMContentLoaded', () => {
         // Toggle contenteditable en fullscreen para el editor inline
         if (isFullscreen) {
             cvPreviewWrapper.setAttribute('contenteditable', 'true');
+            // Marcar el contenedor del avatar como clickeable
+            setTimeout(markAvatarClickable, 100);
         } else {
             cvPreviewWrapper.removeAttribute('contenteditable');
             hideInlineToolbar();
+            hideAvatarPanel();
         }
     };
 
     // --- 3.5. LÓGICA DEL EDITOR INLINE (ESTILO WORD) ---
+
+    // --- AVATAR EDITOR PANEL ---
+    const showAvatarPanel = (avatarEl) => {
+        if (!avatarEditorPanel) return;
+
+        // Ocultar el toolbar de texto para evitar que choquen
+        hideInlineToolbar();
+
+        // Sync UI with current cvData.avatar
+        const currentType = cvData.avatar?.type || 'none';
+        avatarPanelTabs.forEach(t => t.classList.toggle('active', t.dataset.avatarType === currentType));
+        avatarPanelContents.forEach(c => c.classList.toggle('active', c.dataset.avatarContent === currentType));
+        // Populate current values
+        if (cvData.avatar?.type === 'initials') document.getElementById('avatar-panel-initials').value = cvData.avatar.value || '';
+        if (cvData.avatar?.type === 'url') document.getElementById('avatar-panel-url').value = cvData.avatar.value || '';
+        if (cvData.avatar?.type === 'quote') document.getElementById('avatar-panel-quote').value = cvData.avatar.value || '';
+        if (cvData.avatar?.type === 'qr') document.getElementById('avatar-panel-qr').value = cvData.avatar.value || '';
+        if (cvData.avatar?.type === 'svg') { const svgEl = document.getElementById('avatar-panel-svg'); if (svgEl) svgEl.value = cvData.avatar.value || ''; }
+        if (cvData.avatar?.type === 'photo') {
+            const prev = document.getElementById('avatar-panel-photo-preview');
+            if (prev) prev.src = cvData.avatar.value || '';
+        }
+
+        // --- Smart positioning near the avatar element ---
+        // Temporarily show it (off-screen) to measure its size
+        avatarEditorPanel.style.opacity = '0';
+        avatarEditorPanel.style.top = '0';
+        avatarEditorPanel.style.left = '0';
+        avatarEditorPanel.style.transform = 'none';
+        avatarEditorPanel.classList.remove('avatar-panel-hidden');
+        avatarEditorPanel.classList.add('avatar-panel-visible');
+
+        // Get bounding rects relative to the container parent (preview-panel section)
+        const container = avatarEditorPanel.offsetParent || document.body;
+        const parentRect = container.getBoundingClientRect();
+        const panelW = avatarEditorPanel.offsetWidth || 290;
+        const panelH = avatarEditorPanel.offsetHeight || 320;
+        const containerW = container.clientWidth;
+        const containerH = container.clientHeight;
+        // Min top: leave room below the inline toolbar (approx 60px)
+        const TOOLBAR_CLEARANCE = 64;
+
+        let top = 0;
+        let left = 0;
+
+        if (avatarEl) {
+            const avatarRect = avatarEl.getBoundingClientRect();
+            // Try to place the panel to the RIGHT of the avatar
+            let desiredLeft = (avatarRect.right - parentRect.left) + container.scrollLeft + 12;
+            let desiredTop = (avatarRect.top - parentRect.top) + container.scrollTop;
+
+            // If it would overflow right, place it to the LEFT instead
+            if (desiredLeft + panelW > containerW - 8) {
+                desiredLeft = (avatarRect.left - parentRect.left) + container.scrollLeft - panelW - 12;
+            }
+            // Clamp top so panel doesn't go below the visible container
+            if (desiredTop + panelH > containerH + container.scrollTop - 8) {
+                desiredTop = containerH + container.scrollTop - panelH - 8;
+            }
+            // Never above the toolbar clearance zone, and never off-left
+            if (desiredTop < TOOLBAR_CLEARANCE) desiredTop = TOOLBAR_CLEARANCE;
+            if (desiredLeft < 4) desiredLeft = 4;
+
+            top = desiredTop;
+            left = desiredLeft;
+        } else {
+            // Fallback: top-right corner, below toolbar
+            top = TOOLBAR_CLEARANCE;
+            left = containerW - panelW - 16;
+        }
+
+        avatarEditorPanel.style.top = `${top}px`;
+        avatarEditorPanel.style.left = `${left}px`;
+        avatarEditorPanel.style.opacity = '';
+    };
+
+    const hideAvatarPanel = () => {
+        if (!avatarEditorPanel) return;
+        avatarEditorPanel.classList.remove('avatar-panel-visible');
+        avatarEditorPanel.classList.add('avatar-panel-hidden');
+    };
+
+    const markAvatarClickable = () => {
+        // Añade clase css a los contenedores del avatar para mostrar el indicador
+        cvPreviewWrapper.querySelectorAll('[data-avatar-container]').forEach(el => {
+            el.classList.add('cv-avatar-clickable');
+        });
+        // También busca por el patrón visual (divs con border-radius:50% que contienen imgs/divs)
+        const avatarContainers = cvPreviewWrapper.querySelectorAll('div[style*="border-radius:50%"], div[style*="border-radius: 50%"]');
+        avatarContainers.forEach(el => el.classList.add('cv-avatar-clickable'));
+    };
+
+    const setupAvatarEditorPanel = () => {
+        if (!avatarEditorPanel) return;
+
+        // Cerrar panel
+        avatarPanelCloseBtnEl.addEventListener('click', hideAvatarPanel);
+
+        // Clicks fuera del panel cierran el panel
+        document.addEventListener('mousedown', (e) => {
+            if (avatarEditorPanel.classList.contains('avatar-panel-visible') &&
+                !avatarEditorPanel.contains(e.target)) {
+                hideAvatarPanel();
+            }
+        });
+
+        // Cambiar pestañas
+        avatarPanelTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                avatarPanelTabs.forEach(t => t.classList.remove('active'));
+                avatarPanelContents.forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const matchingContent = avatarEditorPanel.querySelector(`[data-avatar-content="${tab.dataset.avatarType}"]`);
+                if (matchingContent) matchingContent.classList.add('active');
+
+                // Poblar el grid de iconos al abrir la pestaña de iconos
+                if (tab.dataset.avatarType === 'icon') {
+                    populateAvatarIconGrid();
+                }
+            });
+        });
+
+        // Función para llenar el grid de iconos
+        const populateAvatarIconGrid = () => {
+            const grid = document.getElementById('avatar-panel-icon-grid');
+            if (!grid || !loadedIcons.length) return;
+            grid.innerHTML = '';
+            loadedIcons.forEach(iconPath => {
+                const btn = document.createElement('div');
+                btn.className = 'avatar-panel-icon-option';
+                btn.dataset.iconPath = iconPath;
+                if (cvData.avatar?.type === 'icon' && cvData.avatar.value === iconPath) {
+                    btn.classList.add('selected');
+                }
+                const img = document.createElement('img');
+                img.src = iconPath;
+                img.alt = '';
+                btn.appendChild(img);
+                btn.addEventListener('click', () => {
+                    grid.querySelectorAll('.avatar-panel-icon-option').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                });
+                grid.appendChild(btn);
+            });
+        };
+
+        // Foto: previsualizar al seleccionar
+        const photoInput = document.getElementById('avatar-panel-photo-input');
+        const photoPreview = document.getElementById('avatar-panel-photo-preview');
+        if (photoInput) {
+            photoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    if (photoPreview) photoPreview.src = ev.target.result;
+                    photoInput.dataset.base64 = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Aplicar cambios
+        avatarPanelApplyBtn.addEventListener('click', () => {
+            const activeTab = avatarEditorPanel.querySelector('.avatar-panel-tab.active');
+            if (!activeTab) return;
+            const type = activeTab.dataset.avatarType;
+
+            const valueMap = {
+                none: () => '',
+                initials: () => (document.getElementById('avatar-panel-initials')?.value || '').toUpperCase(),
+                photo: () => document.getElementById('avatar-panel-photo-input')?.dataset.base64 || cvData.avatar?.value || '',
+                url: () => document.getElementById('avatar-panel-url')?.value || '',
+                quote: () => document.getElementById('avatar-panel-quote')?.value || '',
+                qr: () => document.getElementById('avatar-panel-qr')?.value || '',
+                icon: () => avatarEditorPanel.querySelector('.avatar-panel-icon-option.selected')?.dataset.iconPath || cvData.avatar?.value || '',
+                svg: () => document.getElementById('avatar-panel-svg')?.value || '',
+            };
+
+            cvData.avatar = { type, value: (valueMap[type] || (() => ''))() };
+            updateAndRender();
+            hideAvatarPanel();
+            // Re-marcar el avatar como clickeable después del re-render
+            setTimeout(markAvatarClickable, 100);
+        });
+
+        // Clic en el avatar dentro del preview → abrir panel (solo en fullscreen)
+        cvPreviewWrapper.addEventListener('click', (e) => {
+            if (!document.body.classList.contains('fullscreen-preview')) return;
+            const avatarEl = e.target.closest('.cv-avatar-clickable');
+            if (avatarEl) {
+                e.preventDefault();
+                e.stopPropagation();
+                showAvatarPanel(avatarEl);
+            }
+        });
+    };
     const showInlineToolbar = (rect) => {
         if (!document.body.classList.contains('fullscreen-preview')) return; // Solo en fullscreen
 
@@ -883,20 +1122,136 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         inlineColorInput.addEventListener('mousedown', (e) => e.preventDefault()); // Conservar selección
 
-        // Add Section Button
+        // Add Section Button — inserta al cursor (funciona en sidebar Y en el contenido)
         inlineEditorAddSectionBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            // Generamos el HTML de la nueva sección usando el helper de plantillas
-            // para que adopte exactamente los estilos de la plantilla y colores actuales.
-            const sectionHtml = templateHelpers.renderGenericSection(
-                'NUEVA SECCIÓN',
-                [{ text: 'Escribe aquí tu contenido...' }],
-                item => `<p style="font-size:.85rem; line-height:1.6; color:${cvData.textColorDark};">${item.text}</p>`,
-                cvData.themeColor
-            );
-            document.execCommand('insertHTML', false, sectionHtml + '<br>');
+
+            // Detectar si el cursor está en la parte lateral (roja) o en el contenido principal
+            const selection = window.getSelection();
+            const anchorNode = selection?.anchorNode;
+            const sidebarEl = cvPreviewWrapper.querySelector('[data-cv-background="sidebar"]');
+            const anchorEl = anchorNode?.nodeType === 3 ? anchorNode.parentElement : anchorNode;
+            const inSidebar = !!(sidebarEl && anchorEl && sidebarEl.contains(anchorEl));
+
+            // --- Clonar estilos exactos del primer h3 y p en la misma columna ---
+            const columnEl = inSidebar ? sidebarEl : (cvPreviewWrapper.querySelector('[data-cv-background="main"]') || cvPreviewWrapper);
+            const liveH3 = columnEl?.querySelector('h3');
+            const liveP = columnEl?.querySelector('p');
+
+            let titleStyle = '';
+            if (liveH3) {
+                const cs = window.getComputedStyle(liveH3);
+                const borderW = cs.borderBottomWidth;
+                const hasBorder = borderW && borderW !== '0px';
+                titleStyle = [
+                    `font-family:${cs.fontFamily}`,
+                    `font-size:${cs.fontSize}`,
+                    `font-weight:${cs.fontWeight}`,
+                    `color:${cs.color}`,
+                    `letter-spacing:${cs.letterSpacing}`,
+                    `text-transform:${cs.textTransform}`,
+                    `padding-bottom:${cs.paddingBottom}`,
+                    `margin-bottom:${cs.marginBottom}`,
+                    `margin-top:0`,
+                    `display:block`,
+                    hasBorder ? `border-bottom:${borderW} ${cs.borderBottomStyle} ${cs.borderBottomColor}` : ''
+                ].filter(Boolean).join(';') + ';';
+            } else {
+                const c = inSidebar ? (cvData.textColorLight || '#fff') : (cvData.sectionTitleColor || cvData.themeColor || '#c00');
+                titleStyle = `font-size:1rem;font-weight:700;color:${c};border-bottom:1px solid ${inSidebar ? 'rgba(255,255,255,0.3)' : c};padding-bottom:.4rem;margin-bottom:.8rem;text-transform:uppercase;display:block;`;
+            }
+
+            let bodyStyle = '';
+            if (liveP) {
+                const cs = window.getComputedStyle(liveP);
+                bodyStyle = `font-family:${cs.fontFamily};font-size:${cs.fontSize};color:${cs.color};line-height:${cs.lineHeight};`;
+            } else {
+                const c = inSidebar ? (cvData.textColorLight || '#fff') : (cvData.textColorDark || '#222');
+                bodyStyle = `font-size:.85rem;color:${c};line-height:1.6;`;
+            }
+
+            const sectionHtml = `<div style="margin-top:1.4rem;"><div style="${titleStyle}">NUEVA SECCIÓN</div><p style="${bodyStyle}white-space:pre-wrap;margin-top:0;">Escribe aquí tu contenido...</p></div>`;
+
+            document.execCommand('insertHTML', false, sectionHtml);
+
+            // También guardamos para persistencia
+            if (!cvData.customSections) cvData.customSections = [];
+            cvData.customSections.push({
+                title: 'NUEVA SECCIÓN',
+                content: 'Escribe aquí tu contenido...',
+                column: inSidebar ? 'sidebar' : 'main'
+            });
         });
         inlineEditorAddSectionBtn.addEventListener('mousedown', (e) => e.preventDefault());
+
+        // Add Subsection Button — inserta un "item" (como experiencia/educación) clonando el estilo
+        inlineEditorAddSubsectionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // Detectar columna
+            const selection = window.getSelection();
+            const anchorNode = selection?.anchorNode;
+            const sidebarEl = cvPreviewWrapper.querySelector('[data-cv-background="sidebar"]');
+            const anchorEl = anchorNode?.nodeType === 3 ? anchorNode.parentElement : anchorNode;
+            const inSidebar = !!(sidebarEl && anchorEl && sidebarEl.contains(anchorEl));
+            const columnEl = inSidebar ? sidebarEl : (cvPreviewWrapper.querySelector('[data-cv-background="main"]') || cvPreviewWrapper);
+
+            // Intentar encontrar un "item" de referencia (experiencia, educación, o contacto en sidebar)
+            let protoItem = null;
+            if (inSidebar) {
+                // En el sidebar, buscar específicamente los bloques de contacto (Teléfono, Email, etc.)
+                protoItem = [...columnEl.querySelectorAll('div')].find(d => d.textContent.includes('Teléfono') || d.textContent.includes('Email') || d.textContent.includes('Web')) ||
+                    columnEl.querySelector('div[style*="margin-bottom"]');
+            } else {
+                protoItem = columnEl.querySelector('div[style*="margin-bottom"], .experience-item, .education-item') ||
+                    columnEl.querySelector('div > h4')?.parentElement;
+            }
+
+            let itemHtml = '';
+
+            if (protoItem && protoItem !== columnEl) {
+                // Clonar estilos del item de referencia
+                const cs = window.getComputedStyle(protoItem);
+                const titleNode = protoItem.querySelector('h4, strong, b, span[style*="font-weight:700"], span[style*="font-weight:bold"]');
+                const textNode = protoItem.querySelector('p, span:not([style*="font-weight"])');
+
+                let subTitleStyle = '';
+                if (titleNode) {
+                    const tcs = window.getComputedStyle(titleNode);
+                    subTitleStyle = `font-family:${tcs.fontFamily};font-size:${tcs.fontSize};font-weight:${tcs.fontWeight};color:${tcs.color};margin:0;display:block;`;
+                } else {
+                    subTitleStyle = `font-weight:700;font-size:${inSidebar ? '0.85rem' : '0.9rem'};margin:0;display:block;`;
+                }
+
+                let subTextStyle = '';
+                if (textNode) {
+                    const txcs = window.getComputedStyle(textNode);
+                    subTextStyle = `font-family:${txcs.fontFamily};font-size:${txcs.fontSize};color:${txcs.color};line-height:${txcs.lineHeight};margin:0;display:block;`;
+                } else {
+                    subTextStyle = `font-size:${inSidebar ? '0.8rem' : '0.85rem'};opacity:0.9;margin:0;display:block;`;
+                }
+
+                itemHtml = `
+                    <div style="margin-bottom:${inSidebar ? '0.6rem' : (cs.marginBottom || '1rem')}; margin-top:0; break-inside:avoid;">
+                        <div style="${subTitleStyle}">TÍTULO / ETIQUETA</div>
+                        <div style="${subTextStyle}">Contenido o descripción corta...</div>
+                    </div>
+                `;
+            } else {
+                // Fallback si no hay nada que clonar
+                const themeColor = cvData.themeColor || '#444';
+                const textCol = inSidebar ? '#fff' : '#444';
+                itemHtml = `
+                    <div style="margin-bottom:${inSidebar ? '0.6rem' : '1rem'}; break-inside:avoid;">
+                        <div style="font-weight:700; font-size:${inSidebar ? '0.85rem' : '0.95rem'}; color:${inSidebar ? textCol : themeColor};">NUEVO ÍTEM</div>
+                        <div style="font-size:${inSidebar ? '0.8rem' : '0.85rem'}; color:${textCol}; opacity:0.9;">Descripción...</div>
+                    </div>
+                `;
+            }
+
+            document.execCommand('insertHTML', false, itemHtml);
+        });
+        inlineEditorAddSubsectionBtn.addEventListener('mousedown', (e) => e.preventDefault());
     };
 
 
@@ -1256,6 +1611,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Event Listeners para el Editor Inline (Fullscreen)
         setupInlineEditorListeners();
+        setupAvatarEditorPanel();
+
 
         // --- Event Listeners Refactorizados ---
         formWrapper.addEventListener('input', (e) => {
