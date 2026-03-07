@@ -69,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Lavanda', accent: '#967bb6', dark: '#483263', light: '#ffffff', muted: '#b1a1c9', title: '' },
         { name: 'Grafito', accent: '#343a40', dark: '#000000', light: '#f8f9fa', muted: '#adb5bd', title: '' },
         { name: 'Vino Tinto', accent: '#800020', dark: '#33000d', light: '#ffffff', muted: '#a64059', title: '' },
-        { name: - 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779' },
         { name: 'Oliva', accent: '#556B2F', dark: '#222b13', light: '#FFFFF0', muted: '#8F9779', title: '' },
         { name: 'Cereza', accent: '#d2042d', dark: '#4f0111', light: '#ffffff', muted: '#d16078', title: '' },
         { name: 'Acero', accent: '#4682B4', dark: '#1c3447', light: '#ffffff', muted: '#7da7c9', title: '' },
@@ -1515,7 +1514,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tabElement.classList.add('active');
 
         parent.querySelectorAll(contentSelector).forEach(content => content.classList.remove('active'));
-        parent.querySelector(`${contentSelector} [data - content="${tabName}"]`)?.classList.add('active');
+        parent.querySelector(`${contentSelector}[data-content="${tabName}"]`)?.classList.add('active');
     };
 
     // --- 5. INITIALIZATION & EVENT LISTENERS ---
