@@ -1299,7 +1299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     setActiveSection('design'); // Re-render form to update color previews
                 } else if (target.dataset.bgInputTarget) {
                     const targetType = target.dataset.bgInputTarget; // 'main' or 'sidebar'
-                    cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)} `] = target.value;
+                    cvData[`background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`] = target.value;
                 }
             }
         };
@@ -1437,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resetColors: () => Object.assign(cvData, colorPalettes[0]),
             selectGradient: () => {
                 const targetType = button.closest('.gradient-content-wrapper').dataset.bgTypeTarget;
-                const propertyName = `background${targetType.charAt(0).toUpperCase() + targetType.slice(1)} `;
+                const propertyName = `background${targetType.charAt(0).toUpperCase() + targetType.slice(1)}`;
                 cvData[propertyName] = button.dataset.gradientValue;
             },
             switchBgTarget: () => {
