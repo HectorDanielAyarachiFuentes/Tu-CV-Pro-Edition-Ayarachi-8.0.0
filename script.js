@@ -1466,17 +1466,43 @@ document.addEventListener('DOMContentLoaded', () => {
         _isApplyingHistory = false;
     };
 
-    // Función central: guarda el estado PREVIO (pre-cambio) en el stack y luego renderiza.
-    const updateAndRender = () => {
+    // Debounce state para agrupar keystrokes en un solo undo-step
+    let _historyDebounceTimer = null;
+    let _historyBurstStartSnapshot = null; // estado al inicio de un burst de tipeo
+
+    // Función central: guarda el estado PREVIO en el stack y renderiza.
+    // immediate=true → push al historial ahora mismo (para clicks/acciones)
+    // immediate=false (default) → debounce de 600ms (para teclas en campos de texto)
+    const updateAndRender = (immediate = false) => {
         if (!_isApplyingHistory && _prevSnapshot !== null) {
-            historyStack.push(_prevSnapshot);          // ← snapshot de ANTES del cambio
-            if (historyStack.length > MAX_HISTORY) historyStack.shift();
-            redoStack = [];                             // nuevo cambio anula el redo
-            updateHistoryBtns();
+            if (immediate) {
+                // Cancelar debounce pendiente y guardar ahora
+                clearTimeout(_historyDebounceTimer);
+                _historyBurstStartSnapshot = null;
+                historyStack.push(_prevSnapshot);
+                if (historyStack.length > MAX_HISTORY) historyStack.shift();
+                redoStack = [];
+                updateHistoryBtns();
+            } else {
+                // Guardar el estado de inicio del burst (antes del primer keystroke)
+                if (_historyBurstStartSnapshot === null) {
+                    _historyBurstStartSnapshot = _prevSnapshot;
+                }
+                clearTimeout(_historyDebounceTimer);
+                _historyDebounceTimer = setTimeout(() => {
+                    if (_historyBurstStartSnapshot !== null) {
+                        historyStack.push(_historyBurstStartSnapshot);
+                        if (historyStack.length > MAX_HISTORY) historyStack.shift();
+                        redoStack = [];
+                        updateHistoryBtns();
+                        _historyBurstStartSnapshot = null;
+                    }
+                }, 600);
+            }
         }
         renderCVPreview();
         saveState();
-        _prevSnapshot = JSON.stringify(cvData);        // guardamos estado actual para el próximo undo
+        _prevSnapshot = JSON.stringify(cvData);
     };
 
     const handleDynamicListInput = (target, section) => {
@@ -1604,7 +1630,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Solo guardamos y mostramos la notificación si la acción modificó datos.
-            if (!isUiOnlyAction) updateAndRender();
+            if (!isUiOnlyAction) updateAndRender(true); // click → push inmediato
         }
     };
 
@@ -1827,7 +1853,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const level = e.target.querySelector('#skillLevel').value;
                 if (nameInput.value.trim()) {
                     cvData.skills.push({ id: Date.now(), name: nameInput.value.trim(), level });
-                    updateAndRender(); // Guardamos el nuevo skill
+                    updateAndRender(true); // skill agregado → push inmediato
                     setActiveSection('skills'); // Recargamos el formulario para mostrarlo
                 }
             }
@@ -1838,7 +1864,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     cvData.avatar = { type: 'photo', value: event.target.result };
-                    updateAndRender(); // Guardamos la nueva foto
+                    updateAndRender(true); // foto → push inmediato
                     setActiveSection('avatar'); // Recargamos el formulario para mostrarla
                 };
                 reader.readAsDataURL(e.target.files[0]);
