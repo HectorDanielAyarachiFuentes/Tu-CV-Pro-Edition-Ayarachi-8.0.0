@@ -1377,27 +1377,44 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Funciones del historial ---
+    // Activa/desactiva los botones según el modo y CUALQUIERA de los dos stacks
     const updateHistoryBtns = () => {
         const inFs = document.body.classList.contains('fullscreen-preview');
-        if (undoBtn) undoBtn.disabled = inFs ? fsHistoryStack.length === 0 : historyStack.length === 0;
-        if (redoBtn) redoBtn.disabled = inFs ? fsRedoStack.length === 0 : redoStack.length === 0;
+        const canUndo = inFs ? (fsHistoryStack.length > 0 || historyStack.length > 0) : historyStack.length > 0;
+        const canRedo = inFs ? (fsRedoStack.length > 0 || redoStack.length > 0) : redoStack.length > 0;
+        if (undoBtn) undoBtn.disabled = !canUndo;
+        if (redoBtn) redoBtn.disabled = !canRedo;
     };
 
     const applyUndo = () => {
-        // En pantalla completa: undo sobre el DOM del contenteditable
         if (document.body.classList.contains('fullscreen-preview')) {
-            if (fsHistoryStack.length === 0) return;
-            _isApplyingFsHistory = true;
-            fsRedoStack.push(cvPreviewWrapper.innerHTML);
-            cvPreviewWrapper.innerHTML = fsHistoryStack.pop();
-            _fsPrevHtml = cvPreviewWrapper.innerHTML;
-            updateHistoryBtns();
-            _isApplyingFsHistory = false;
+            if (fsHistoryStack.length > 0) {
+                // Primero deshacemos ediciones inline de fullscreen
+                _isApplyingFsHistory = true;
+                fsRedoStack.push(cvPreviewWrapper.innerHTML);
+                cvPreviewWrapper.innerHTML = fsHistoryStack.pop();
+                _fsPrevHtml = cvPreviewWrapper.innerHTML;
+                updateHistoryBtns();
+                _isApplyingFsHistory = false;
+            } else if (historyStack.length > 0) {
+                // Sin ediciones inline → retrocedemos al historial del panel
+                _isApplyingHistory = true;
+                redoStack.push(JSON.stringify(cvData));
+                const snapshot = historyStack.pop();
+                Object.assign(cvData, JSON.parse(snapshot));
+                _prevSnapshot = JSON.stringify(cvData);
+                renderCVPreview();
+                saveState();
+                _fsPrevHtml = cvPreviewWrapper.innerHTML; // nuevo baseline inline
+                updateHistoryBtns();
+                _isApplyingHistory = false;
+            }
             return;
         }
+        // Modo panel normal
         if (historyStack.length === 0) return;
         _isApplyingHistory = true;
-        redoStack.push(JSON.stringify(cvData));  // estado actual → redo
+        redoStack.push(JSON.stringify(cvData));
         const snapshot = historyStack.pop();
         Object.assign(cvData, JSON.parse(snapshot));
         _prevSnapshot = JSON.stringify(cvData);
@@ -1410,20 +1427,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const applyRedo = () => {
-        // En pantalla completa: redo sobre el DOM del contenteditable
         if (document.body.classList.contains('fullscreen-preview')) {
-            if (fsRedoStack.length === 0) return;
-            _isApplyingFsHistory = true;
-            fsHistoryStack.push(cvPreviewWrapper.innerHTML);
-            cvPreviewWrapper.innerHTML = fsRedoStack.pop();
-            _fsPrevHtml = cvPreviewWrapper.innerHTML;
-            updateHistoryBtns();
-            _isApplyingFsHistory = false;
+            if (fsRedoStack.length > 0) {
+                // Primero rehacemos ediciones inline de fullscreen
+                _isApplyingFsHistory = true;
+                fsHistoryStack.push(cvPreviewWrapper.innerHTML);
+                cvPreviewWrapper.innerHTML = fsRedoStack.pop();
+                _fsPrevHtml = cvPreviewWrapper.innerHTML;
+                updateHistoryBtns();
+                _isApplyingFsHistory = false;
+            } else if (redoStack.length > 0) {
+                // Sin redo inline → avanzamos en el historial del panel
+                _isApplyingHistory = true;
+                historyStack.push(JSON.stringify(cvData));
+                const snapshot = redoStack.pop();
+                Object.assign(cvData, JSON.parse(snapshot));
+                _prevSnapshot = JSON.stringify(cvData);
+                renderCVPreview();
+                saveState();
+                _fsPrevHtml = cvPreviewWrapper.innerHTML;
+                updateHistoryBtns();
+                _isApplyingHistory = false;
+            }
             return;
         }
+        // Modo panel normal
         if (redoStack.length === 0) return;
         _isApplyingHistory = true;
-        historyStack.push(JSON.stringify(cvData)); // estado actual → undo
+        historyStack.push(JSON.stringify(cvData));
         const snapshot = redoStack.pop();
         Object.assign(cvData, JSON.parse(snapshot));
         _prevSnapshot = JSON.stringify(cvData);
@@ -1720,18 +1751,30 @@ document.addEventListener('DOMContentLoaded', () => {
             redoBtn.addEventListener('mousedown', (e) => e.preventDefault());
         }
         document.addEventListener('keydown', (e) => {
-            const tag = document.activeElement?.tagName;
-            const isEditing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-            // En pantalla completa, el CV es contenteditable: dejar que el navegador maneje su propio undo nativo
-            const isInlineEditing = document.body.classList.contains('fullscreen-preview') &&
-                cvPreviewWrapper.contains(document.activeElement);
-            if (isEditing || isInlineEditing) return;
-            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
-                e.preventDefault();
-                applyUndo();
-            } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) {
-                e.preventDefault();
-                applyRedo();
+            if (!(e.ctrlKey || e.metaKey)) return;
+            const inFs = document.body.classList.contains('fullscreen-preview');
+            // En fullscreen editando DENTRO del CV sin haber salido del contenteditable:
+            // solo dejamos pasar si el activo es directamente el cvPreviewWrapper (no sus hijos)
+            const isInlineEditing = inFs && cvPreviewWrapper.contains(document.activeElement);
+            if (isInlineEditing) return;
+
+            if (!e.shiftKey && e.key === 'z') {
+                // Unified: en fullscreen, cualquiera de los dos stacks
+                const canUndo = inFs
+                    ? (fsHistoryStack.length > 0 || historyStack.length > 0)
+                    : historyStack.length > 0;
+                if (canUndo) {
+                    e.preventDefault();
+                    applyUndo();
+                }
+            } else if (e.key === 'y' || (e.shiftKey && e.key === 'z')) {
+                const canRedo = inFs
+                    ? (fsRedoStack.length > 0 || redoStack.length > 0)
+                    : redoStack.length > 0;
+                if (canRedo) {
+                    e.preventDefault();
+                    applyRedo();
+                }
             }
         });
         updateHistoryBtns(); // Estado inicial: botones deshabilitados
