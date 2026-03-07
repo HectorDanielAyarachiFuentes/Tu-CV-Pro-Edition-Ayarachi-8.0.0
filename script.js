@@ -119,6 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const aboutBtn = document.getElementById('about-btn');
     const aboutModal = document.getElementById('about-modal');
     const modalCloseBtn = document.getElementById('modal-close-btn');
+    const undoBtn = document.getElementById('undo-btn');
+    const redoBtn = document.getElementById('redo-btn');
     // Avatar editor panel elements
     const avatarEditorPanel = document.getElementById('avatar-editor-panel');
     const avatarPanelCloseBtnEl = document.getElementById('avatar-panel-close-btn');
@@ -130,6 +132,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let loadedIcons = [];
     let svgCache = {};
     const aboutAudio = new Audio('Dulce-song/Dulce-song.mp3');
+
+    // --- HISTORIAL DE CAMBIOS (UNDO / REDO) ---
+    const MAX_HISTORY = 50;
+    // Historial del editor de formulario (cvData snapshots)
+    let historyStack = [];
+    let redoStack = [];
+    let _isApplyingHistory = false;
+    let _prevSnapshot = null;
+    // Historial del editor fullscreen (DOM innerHTML snapshots)
+    let fsHistoryStack = [];
+    let fsRedoStack = [];
+    let _fsPrevHtml = null;
+    let _isApplyingFsHistory = false;
 
 
     // --- 3. TEMPLATE & FORM FUNCTIONS ---
@@ -826,12 +841,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Toggle contenteditable en fullscreen para el editor inline
         if (isFullscreen) {
             cvPreviewWrapper.setAttribute('contenteditable', 'true');
+            // Inicializar historial fullscreen
+            fsHistoryStack = [];
+            fsRedoStack = [];
+            _fsPrevHtml = cvPreviewWrapper.innerHTML;
+            updateHistoryBtns();
             // Marcar el contenedor del avatar como clickeable
             setTimeout(markAvatarClickable, 100);
         } else {
             cvPreviewWrapper.removeAttribute('contenteditable');
             hideInlineToolbar();
             hideAvatarPanel();
+            _fsPrevHtml = null;
+            updateHistoryBtns();
         }
     };
 
@@ -1096,6 +1118,25 @@ document.addEventListener('DOMContentLoaded', () => {
         cvPreviewWrapper.addEventListener('mouseup', handleSelectionChange);
         cvPreviewWrapper.addEventListener('keyup', handleSelectionChange); // Para selección con teclado
 
+        // Capturar historial de edición directa en fullscreen (contenteditable)
+        let _fsInputDebounce = null;
+        cvPreviewWrapper.addEventListener('input', () => {
+            if (!document.body.classList.contains('fullscreen-preview')) return;
+            if (_isApplyingFsHistory) return;
+            // Guardar el estado PREVIO (antes del cambio actual) en el stack
+            if (_fsPrevHtml !== null) {
+                fsHistoryStack.push(_fsPrevHtml);
+                if (fsHistoryStack.length > MAX_HISTORY) fsHistoryStack.shift();
+                fsRedoStack = []; // nuevo cambio borra el redo
+            }
+            // Actualizar el snapshot previo con el estado actual
+            clearTimeout(_fsInputDebounce);
+            _fsInputDebounce = setTimeout(() => {
+                _fsPrevHtml = cvPreviewWrapper.innerHTML;
+                updateHistoryBtns();
+            }, 150); // pequeño debounce para no guardar cada tecla individual
+        });
+
         // Ocultar si hace click fuera
         document.addEventListener('mousedown', (e) => {
             if (!inlineEditorToolbar.contains(e.target) && !cvPreviewWrapper.contains(e.target)) {
@@ -1335,10 +1376,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Nueva función central para renderizar y guardar
-    const updateAndRender = () => {
+    // --- Funciones del historial ---
+    const updateHistoryBtns = () => {
+        const inFs = document.body.classList.contains('fullscreen-preview');
+        if (undoBtn) undoBtn.disabled = inFs ? fsHistoryStack.length === 0 : historyStack.length === 0;
+        if (redoBtn) redoBtn.disabled = inFs ? fsRedoStack.length === 0 : redoStack.length === 0;
+    };
+
+    const applyUndo = () => {
+        // En pantalla completa: undo sobre el DOM del contenteditable
+        if (document.body.classList.contains('fullscreen-preview')) {
+            if (fsHistoryStack.length === 0) return;
+            _isApplyingFsHistory = true;
+            fsRedoStack.push(cvPreviewWrapper.innerHTML);
+            cvPreviewWrapper.innerHTML = fsHistoryStack.pop();
+            _fsPrevHtml = cvPreviewWrapper.innerHTML;
+            updateHistoryBtns();
+            _isApplyingFsHistory = false;
+            return;
+        }
+        if (historyStack.length === 0) return;
+        _isApplyingHistory = true;
+        redoStack.push(JSON.stringify(cvData));  // estado actual → redo
+        const snapshot = historyStack.pop();
+        Object.assign(cvData, JSON.parse(snapshot));
+        _prevSnapshot = JSON.stringify(cvData);
         renderCVPreview();
         saveState();
+        const lastSection = localStorage.getItem('cvProLastSection');
+        if (lastSection) setActiveSection(lastSection);
+        updateHistoryBtns();
+        _isApplyingHistory = false;
+    };
+
+    const applyRedo = () => {
+        // En pantalla completa: redo sobre el DOM del contenteditable
+        if (document.body.classList.contains('fullscreen-preview')) {
+            if (fsRedoStack.length === 0) return;
+            _isApplyingFsHistory = true;
+            fsHistoryStack.push(cvPreviewWrapper.innerHTML);
+            cvPreviewWrapper.innerHTML = fsRedoStack.pop();
+            _fsPrevHtml = cvPreviewWrapper.innerHTML;
+            updateHistoryBtns();
+            _isApplyingFsHistory = false;
+            return;
+        }
+        if (redoStack.length === 0) return;
+        _isApplyingHistory = true;
+        historyStack.push(JSON.stringify(cvData)); // estado actual → undo
+        const snapshot = redoStack.pop();
+        Object.assign(cvData, JSON.parse(snapshot));
+        _prevSnapshot = JSON.stringify(cvData);
+        renderCVPreview();
+        saveState();
+        const lastSection = localStorage.getItem('cvProLastSection');
+        if (lastSection) setActiveSection(lastSection);
+        updateHistoryBtns();
+        _isApplyingHistory = false;
+    };
+
+    // Función central: guarda el estado PREVIO (pre-cambio) en el stack y luego renderiza.
+    const updateAndRender = () => {
+        if (!_isApplyingHistory && _prevSnapshot !== null) {
+            historyStack.push(_prevSnapshot);          // ← snapshot de ANTES del cambio
+            if (historyStack.length > MAX_HISTORY) historyStack.shift();
+            redoStack = [];                             // nuevo cambio anula el redo
+            updateHistoryBtns();
+        }
+        renderCVPreview();
+        saveState();
+        _prevSnapshot = JSON.stringify(cvData);        // guardamos estado actual para el próximo undo
     };
 
     const handleDynamicListInput = (target, section) => {
@@ -1566,6 +1673,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         renderCVPreview();
+        _prevSnapshot = JSON.stringify(cvData); // Baseline para el historial de undo
 
         // 3. Carga diferida (en segundo plano) de recursos menos urgentes
         Promise.all([
@@ -1600,6 +1708,33 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggleBtn.addEventListener('click', handleThemeToggle);
         toggleFullscreenBtn.addEventListener('click', handleFullscreenToggle);
         resetCvBtn.addEventListener('click', resetCvData);
+
+        // --- Historial: botones y teclado ---
+        if (undoBtn) {
+            undoBtn.addEventListener('click', applyUndo);
+            // Evitar que el clic robe el foco del contenteditable en pantalla completa
+            undoBtn.addEventListener('mousedown', (e) => e.preventDefault());
+        }
+        if (redoBtn) {
+            redoBtn.addEventListener('click', applyRedo);
+            redoBtn.addEventListener('mousedown', (e) => e.preventDefault());
+        }
+        document.addEventListener('keydown', (e) => {
+            const tag = document.activeElement?.tagName;
+            const isEditing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+            // En pantalla completa, el CV es contenteditable: dejar que el navegador maneje su propio undo nativo
+            const isInlineEditing = document.body.classList.contains('fullscreen-preview') &&
+                cvPreviewWrapper.contains(document.activeElement);
+            if (isEditing || isInlineEditing) return;
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === 'z') {
+                e.preventDefault();
+                applyUndo();
+            } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) {
+                e.preventDefault();
+                applyRedo();
+            }
+        });
+        updateHistoryBtns(); // Estado inicial: botones deshabilitados
 
         aboutBtn.addEventListener('click', (e) => {
             e.preventDefault();

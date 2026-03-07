@@ -349,12 +349,42 @@ body {
     z-index: 10;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: 0.75rem;
     padding: 1rem 2rem;
     background: linear-gradient(to bottom, rgba(233, 236, 239, 0.95), rgba(233, 236, 239, 0.8));
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--color-border);
+}
+
+/* Grupo de botones de historial (deshacer / rehacer) */
+.history-btn-group {
+    display: flex;
+    gap: 0.25rem;
+    margin-right: auto; /* Empuja el resto de botones a la derecha */
+    background-color: var(--color-light-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.2rem;
+}
+
+.history-btn-group .btn-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: calc(var(--radius-md) - 2px);
+    border: none;
+    transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+}
+
+.history-btn-group .btn-icon:not(:disabled):hover {
+    background-color: var(--color-light-bg-alt);
+    transform: scale(1.1);
+}
+
+.history-btn-group .btn-icon:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
 }
 
 #cv-preview-wrapper {
