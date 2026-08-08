@@ -76,6 +76,39 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Primavera', accent: '#7CFC00', dark: '#316400', light: '#000000', muted: '#548324', title: '' }
     ];
 
+    const resizeBase64Image = (base64Str, maxSize = 250) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+                if (width > height) {
+                    if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+                } else {
+                    if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.src = base64Str;
+        });
+    };
+
+    const resizeImageAndGetBase64 = (file, maxSize = 250) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const resized = await resizeBase64Image(e.target.result, maxSize);
+                resolve(resized);
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
     // --- VALIDATION HELPERS ---
     const validators = {
         email: (value) => (value === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) ? '' : 'Formato inválido. Ej: nombre@dominio.com',
@@ -808,12 +841,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const handleShareClick = () => {
+    const handleShareClick = async () => {
         try {
-            const jsonString = JSON.stringify(cvData);
+            // Hacemos una copia para no alterar el CV que estás viendo
+            const dataToShare = JSON.parse(JSON.stringify(cvData));
+
+            const jsonString = JSON.stringify(dataToShare);
+
             // Comprimimos y codificamos los datos para hacer la URL más corta y robusta
-            const base64String = btoa(jsonString);
-            const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodeURIComponent(base64String)}`;
+            const compressedString = typeof LZString !== 'undefined' ? LZString.compressToEncodedURIComponent(jsonString) : btoa(jsonString);
+            const dataParam = typeof LZString !== 'undefined' ? compressedString : encodeURIComponent(compressedString);
+            
+            // EL TRUCO: Usamos un Hash (#) en lugar de Query (?) para que la URL NO se envíe al servidor.
+            // Esto evade por completo el error "431 Request Header Fields Too Large".
+            const shareUrl = `${window.location.origin}${window.location.pathname}#cv=${dataParam}`;
+
+            // Los navegadores modernos soportan Hashes muy grandes (miles de KB), pero damos un aviso por si acaso.
+            if (shareUrl.length > 50000) {
+                alert("Advertencia: El enlace generado es muy largo (más de 50,000 caracteres) y podría ser difícil de copiar o pegar en algunos lugares, pero debería funcionar.");
+            }
 
             // Copiamos al portapapeles
             navigator.clipboard.writeText(shareUrl).then(() => {
@@ -1008,15 +1054,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const photoInput = document.getElementById('avatar-panel-photo-input');
         const photoPreview = document.getElementById('avatar-panel-photo-preview');
         if (photoInput) {
-            photoInput.addEventListener('change', (e) => {
+            photoInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    if (photoPreview) photoPreview.src = ev.target.result;
-                    photoInput.dataset.base64 = ev.target.result;
-                };
-                reader.readAsDataURL(file);
+                const base64 = await resizeImageAndGetBase64(file, 250);
+                if (photoPreview) photoPreview.src = base64;
+                photoInput.dataset.base64 = base64;
             });
         }
 
@@ -1682,49 +1725,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- 5. INITIALIZATION & EVENT LISTENERS ---
-    async function init() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const sharedData = urlParams.get('data');
-
-        if (sharedData) {
-            try {
-                const jsonString = atob(decodeURIComponent(sharedData));
-                const parsedData = JSON.parse(jsonString);
-                Object.assign(cvData, parsedData);
-
-                // Activar modo solo lectura
-                document.body.classList.add('read-only-mode');
-            } catch (error) {
-                console.error("Error al decodificar los datos compartidos:", error);
-                alert("El enlace para compartir parece estar dañado. Cargando la versión por defecto.");
-                loadState(); // Cargar desde localStorage si los datos compartidos fallan
-            }
-        } else {
-            loadState(); // Cargar datos guardados si no hay datos compartidos
-        }
-
+    // Función que carga el resto de la interfaz tras leer los datos
+    async function postInitLoading() {
         applySavedTheme();
 
         // 1. Carga crítica que bloquea la interfaz (las plantillas)
         await loadTemplates();
 
         // 2. Renderiza la interfaz inicial con las plantillas cargadas
-        // Carga la última sección visitada o 'welcome' por defecto
         const lastSection = localStorage.getItem('cvProLastSection');
         // Si estamos en modo solo-lectura, no es necesario activar ninguna sección del editor.
         if (!document.body.classList.contains('read-only-mode')) {
             setActiveSection(lastSection || 'welcome');
-            // Asegurarse de que el selector de fondo correcto esté visible al cargar
             const activeBgTarget = document.querySelector('.background-target-selector.active')?.dataset.bgTarget || 'main';
             document.querySelectorAll('.gradient-content-wrapper').forEach(w => {
                 w.style.display = w.dataset.bgTypeTarget === activeBgTarget ? 'block' : 'none';
             });
 
-            // Ejecutar validación en todos los campos al cargar una sección
             document.querySelectorAll('.form-section.active input, .form-section.active textarea').forEach(input => {
                 validateInput(input);
             });
-            // Y también para los rangos de fechas
             document.querySelectorAll('.form-section.active .item').forEach(itemEl => {
                 validateDateRange(itemEl);
             });
@@ -1737,12 +1757,58 @@ document.addEventListener('DOMContentLoaded', () => {
             loadGradientPresets(),
             loadIcons()
         ]).then(() => {
-            // Si el usuario ya está en "diseño" o "avatar", forzamos un re-render para que aparezcan los íconos/fondos que acaban de cargar.
             const currentSection = localStorage.getItem('cvProLastSection');
             if (currentSection === 'design' || currentSection === 'avatar') {
                 setActiveSection(currentSection);
             }
         });
+    }
+
+    async function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let sharedData = urlParams.get('data'); // soporte legado
+        
+        // El TRUCO: Soporte para leer desde el HASH de la URL (no se envía al servidor)
+        if (!sharedData && window.location.hash && window.location.hash.startsWith('#cv=')) {
+            sharedData = window.location.hash.substring(4);
+        }
+
+        if (sharedData) {
+            // Mostrar pantalla de carga
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) loadingScreen.style.display = 'flex';
+
+            // Damos 100ms para que el navegador dibuje la pantalla de carga antes de bloquearlo
+            setTimeout(async () => {
+                try {
+                    let jsonString = null;
+                    
+                    if (typeof LZString !== 'undefined') {
+                        jsonString = LZString.decompressFromEncodedURIComponent(sharedData);
+                    }
+                    
+                    if (!jsonString) {
+                        jsonString = atob(decodeURIComponent(sharedData));
+                    }
+
+                    const parsedData = JSON.parse(jsonString);
+                    Object.assign(cvData, parsedData);
+
+                    document.body.classList.add('read-only-mode');
+                } catch (error) {
+                    console.error("Error al decodificar los datos compartidos:", error);
+                    alert("El enlace para compartir parece estar dañado. Cargando la versión por defecto.");
+                    loadState(); 
+                }
+                
+                await postInitLoading();
+                if (loadingScreen) loadingScreen.style.display = 'none';
+            }, 100);
+            
+        } else {
+            loadState(); // Cargar datos guardados si no hay datos compartidos
+            await postInitLoading();
+        }
         const handleDownloadPdf = () => {
             // Guarda el título original del documento
             const originalTitle = document.title;
@@ -1859,15 +1925,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        formWrapper.addEventListener('change', (e) => {
+        formWrapper.addEventListener('change', async (e) => {
             if (e.target.id === 'photo-input' && e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    cvData.avatar = { type: 'photo', value: event.target.result };
-                    updateAndRender(true); // foto → push inmediato
-                    setActiveSection('avatar'); // Recargamos el formulario para mostrarla
-                };
-                reader.readAsDataURL(e.target.files[0]);
+                const base64 = await resizeImageAndGetBase64(e.target.files[0], 250);
+                cvData.avatar = { type: 'photo', value: base64 };
+                updateAndRender(true); // foto → push inmediato
+                setActiveSection('avatar'); // Recargamos el formulario para mostrarla
             }
         });
 
