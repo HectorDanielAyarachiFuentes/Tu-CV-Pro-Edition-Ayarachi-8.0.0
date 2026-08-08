@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const iconNames = await iconListResponse.json();
             svgCache = await cacheResponse.json();
 
-            loadedIcons = iconNames.map(name => `icon-svg/${name}.svg`);
+            loadedIcons = iconNames.map(name => `icon-SVG/${name}.svg`);
 
             // Cargar SVGs que no están en la caché
             const iconsToFetch = loadedIcons.filter(path => !svgCache[path]);
