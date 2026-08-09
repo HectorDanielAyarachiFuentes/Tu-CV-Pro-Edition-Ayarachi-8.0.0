@@ -556,6 +556,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--primary-accent', themeColor);
         const layout = cvData.layout || 'classic';
         cvPreviewWrapper.dataset.layout = layout;
+
+        if (document.body.classList.contains('read-only-mode') && cvData.customHtml) {
+            cvPreviewWrapper.innerHTML = cvData.customHtml;
+            return;
+        }
+
         const templateFn = templates[layout];
         if (typeof templateFn !== 'function') {
             console.error(`La plantilla "${layout}" no existe o no es una función.`);
@@ -845,6 +851,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Hacemos una copia para no alterar el CV que estás viendo
             const dataToShare = JSON.parse(JSON.stringify(cvData));
+
+            // Guardamos el HTML renderizado exacto, incluyendo cualquier edición en modo extendido
+            dataToShare.customHtml = cvPreviewWrapper.innerHTML;
 
             const jsonString = JSON.stringify(dataToShare);
 
