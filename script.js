@@ -504,6 +504,77 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- 4. CORE FUNCTIONS ---
+
+    // --- UI UTILS (MODALS & TOASTS) ---
+    const showToast = (message, type = 'success') => {
+        let toastEl = document.getElementById('custom-toast-container');
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.id = 'custom-toast-container';
+            document.body.appendChild(toastEl);
+        }
+        toastEl.className = 'custom-toast ' + type;
+        
+        let iconHtml = '';
+        if (type === 'success') iconHtml = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>';
+        else if (type === 'error') iconHtml = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        else if (type === 'warning') iconHtml = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+
+        toastEl.innerHTML = `${iconHtml}<span>${message}</span>`;
+        void toastEl.offsetWidth; // Reflow
+        toastEl.classList.add('show');
+        
+        if (toastEl.timeoutId) clearTimeout(toastEl.timeoutId);
+        toastEl.timeoutId = setTimeout(() => toastEl.classList.remove('show'), 4000);
+    };
+
+    const showModal = (title, message, type = 'alert', onConfirm = null) => {
+        let overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay';
+        
+        let inputHtml = type === 'prompt' ? `<input type="text" id="custom-modal-input-field" class="custom-modal-input" value="${message.defaultValue || ''}">` : '';
+        let msgHtml = type === 'prompt' ? `<p class="custom-modal-message">${message.text}</p>` : `<p class="custom-modal-message">${message}</p>`;
+
+        overlay.innerHTML = `
+            <div class="custom-modal">
+                <h3 class="custom-modal-title">${title}</h3>
+                ${msgHtml}
+                ${inputHtml}
+                <div class="custom-modal-actions">
+                    ${type !== 'alert' ? '<button class="btn btn-secondary" id="custom-modal-cancel">Cancelar</button>' : ''}
+                    <button class="btn btn-primary" id="custom-modal-confirm">Aceptar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        void overlay.offsetWidth;
+        overlay.classList.add('show');
+        
+        const close = () => {
+            overlay.classList.remove('show');
+            setTimeout(() => { if(overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 300);
+        };
+
+        const confirmBtn = overlay.querySelector('#custom-modal-confirm');
+        const cancelBtn = overlay.querySelector('#custom-modal-cancel');
+        const inputField = overlay.querySelector('#custom-modal-input-field');
+
+        confirmBtn.addEventListener('click', () => {
+            close();
+            if (onConfirm) {
+                if (type === 'prompt') onConfirm(inputField.value);
+                else onConfirm(true);
+            }
+        });
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => {
+                close();
+                if (onConfirm && type !== 'prompt') onConfirm(false);
+            });
+        }
+    };
+
     let saveTimeout;
     const showSaveNotification = () => {
         if (saveTimeout) clearTimeout(saveTimeout);
@@ -530,22 +601,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const resetCvData = () => {
-        const confirmed = confirm("¿Estás seguro de que quieres limpiar todo el formulario? Se perderán todos los cambios y se volverá a los datos de ejemplo.");
-        if (confirmed) {
-            // Restauramos cvData al estado por defecto
-            cvData = JSON.parse(JSON.stringify(defaultCvData));
+        showModal("Confirmar Limpieza", "¿Estás seguro de que quieres limpiar todo el formulario? Se perderán todos los cambios y se volverá a los datos de ejemplo.", "confirm", (confirmed) => {
+            if (confirmed) {
+                // Restauramos cvData al estado por defecto
+                cvData = JSON.parse(JSON.stringify(defaultCvData));
 
-            // Limpiar cualquier clase de validación que haya quedado en el formulario
-            document.querySelectorAll('.form-section input.invalid, .form-section textarea.invalid').forEach(el => {
-                el.classList.remove('invalid');
-            });
+                // Limpiar cualquier clase de validación que haya quedado en el formulario
+                document.querySelectorAll('.form-section input.invalid, .form-section textarea.invalid').forEach(el => {
+                    el.classList.remove('invalid');
+                });
 
-            // Guardamos el estado reseteado
-            saveState();
-            // Volvemos a la pantalla de bienvenida
-            setActiveSection('welcome');
-            renderCVPreview();
-        }
+                // Guardamos el estado reseteado
+                saveState();
+                // Volvemos a la pantalla de bienvenida
+                setActiveSection('welcome');
+                // Historial
+                _prevSnapshot = JSON.stringify(cvData);
+                historyStack = [];
+                redoStack = [];
+                updateHistoryBtns();
+                renderCVPreview();
+            }
+        });
     };
     const renderForm = (html) => {
         formWrapper.innerHTML = html;
@@ -843,7 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Error al generar el archivo HTML:", error);
-            alert("Hubo un error al intentar generar el archivo HTML. Por favor, revisa la consola para más detalles.");
+            showToast("Hubo un error al intentar generar el archivo HTML.", "error");
         }
     };
 
@@ -867,20 +944,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Los navegadores modernos soportan Hashes muy grandes (miles de KB), pero damos un aviso por si acaso.
             if (shareUrl.length > 50000) {
-                alert("Advertencia: El enlace generado es muy largo (más de 50,000 caracteres) y podría ser difícil de copiar o pegar en algunos lugares, pero debería funcionar.");
+                showToast("El enlace generado es muy largo, pero debería funcionar.", "warning");
             }
 
             // Copiamos al portapapeles
             navigator.clipboard.writeText(shareUrl).then(() => {
-                alert('¡Enlace para compartir copiado al portapapeles!');
+                showToast("¡Enlace para compartir copiado al portapapeles!", "success");
             }).catch(err => {
                 console.error('Error al copiar al portapapeles: ', err);
-                alert('No se pudo copiar el enlace. Puedes copiarlo manualmente desde la barra de direcciones.');
-                window.prompt("Copia este enlace:", shareUrl);
+                showToast("No se pudo copiar automáticamente.", "error");
+                showModal("Copiar Enlace", { text: "Copia este enlace manualmente:", defaultValue: shareUrl }, "prompt");
             });
         } catch (error) {
             console.error("Error al crear el enlace para compartir:", error);
-            alert("No se pudo generar el enlace para compartir.");
+            showToast("No se pudo generar el enlace para compartir.", "error");
         }
     };
 
@@ -1806,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.body.classList.add('read-only-mode');
                 } catch (error) {
                     console.error("Error al decodificar los datos compartidos:", error);
-                    alert("El enlace para compartir parece estar dañado. Cargando la versión por defecto.");
+                    showToast("El enlace parece estar dañado. Cargando la versión por defecto.", "error");
                     loadState(); 
                 }
                 
