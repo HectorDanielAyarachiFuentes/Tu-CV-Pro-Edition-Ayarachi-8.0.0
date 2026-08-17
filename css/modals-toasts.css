@@ -1,0 +1,507 @@
+﻿/* --- Estilos de NotificaciÃ³n de Guardado --- */
+.save-notification {
+    position: absolute;
+    top: 1.5rem;
+    left: 50%;
+    transform: translate(-50%, -10px);
+    background-color: #28a745;
+    color: white;
+    padding: 0.7rem 1.2rem;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s;
+    z-index: 200;
+}
+
+.save-notification.show {
+    transform: translate(-50%, 0);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- Modo Solo Lectura (para compartir) --- */
+.read-only-mode .editor-panel {
+    display: none;
+}
+
+.read-only-mode .cv-builder-container {
+    grid-template-columns: 1fr;
+}
+
+.read-only-mode .preview-header {
+    justify-content: flex-end;
+}
+
+.read-only-mode #share-cv-btn,
+.read-only-mode #reset-cv-btn,
+.read-only-mode #toggle-fullscreen-btn {
+    display: none;
+}
+
+/* --- Estilos para el Modal "Sobre mÃ­" --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(33, 37, 41, 0.6);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--color-white);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: var(--shadow-md);
+    transform: translateY(20px) scale(0.98);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.modal-overlay.show .modal-content {
+    transform: translateY(0) scale(1);
+}
+
+.modal-overlay.show .modal-content>* {
+    animation: fadeIn-up 0.5s 0.2s both cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.modal-overlay.show .modal-content>*:nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.modal-overlay.show .modal-content>*:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.modal-overlay.show .modal-content>*:nth-child(4) {
+    animation-delay: 0.35s;
+}
+
+.modal-overlay.show .modal-content>*:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+@keyframes fadeIn-up {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-muted-text);
+    transition: transform 0.2s ease;
+}
+
+.modal-close:hover {
+    transform: rotate(90deg);
+}
+
+.modal-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    border: 4px solid var(--primary-accent);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal-img:hover {
+    transform: scale(1.05) rotate(3deg);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--primary-accent) 30%, transparent);
+}
+
+.modal-content h2 {
+    margin-bottom: 1rem;
+    color: var(--primary-accent);
+}
+
+.modal-content p {
+    margin-bottom: 1rem;
+    color: var(--color-dark-text);
+}
+
+.modal-content .btn {
+    margin-top: 1rem;
+}
+
+[data-editor-theme="dark"] .modal-content {
+    background: #2c303a;
+}
+
+[data-editor-theme="dark"] .modal-content p {
+    color: #f8f9fa;
+}
+
+[data-editor-theme="dark"] .modal-close {
+    color: #adb5bd;
+}
+
+/* --- Custom Modals & Toasts UI --- */
+.custom-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: #2A303C;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+}
+
+.custom-toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.custom-toast.success { border-left: 4px solid var(--primary-accent, #20c997); }
+.custom-toast.error { border-left: 4px solid #dc3545; }
+.custom-toast.warning { border-left: 4px solid #ffc107; }
+
+.custom-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+}
+
+.custom-modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.custom-modal {
+    background-color: var(--bg-color, #fff);
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 420px;
+    padding: 24px;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: var(--color-text, #333);
+}
+
+[data-editor-theme="dark"] .custom-modal {
+    background-color: #212529;
+    color: #f8f9fa;
+}
+
+.custom-modal-overlay.show .custom-modal {
+    transform: scale(1);
+}
+
+.custom-modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    margin-top: 0;
+}
+
+.custom-modal-message {
+    font-size: 0.95rem;
+    color: var(--color-muted-text, #6c757d);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.custom-modal-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: var(--bg-color, #fff);
+    color: var(--color-text, #333);
+}
+
+.custom-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* --- Mascota About Bubble (Modern UX/UI) --- */
+.mascota-container {
+    position: relative;
+    display: inline-block;
+    margin: 1.5rem auto 1.5rem auto; 
+}
+
+.speech-bubble {
+    position: absolute;
+    top: 30%; 
+    left: 100%; /* Placed entirely outside the dog to the right */
+    margin-left: 15px; 
+    transform: translateY(-50%) scale(0.5);
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--primary-accent, #525f7f); 
+    padding: 12px 22px;
+    border-radius: 20px 20px 20px 4px; /* Classic speech bubble shape pointing bottom-left */
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.05);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    animation: bubble-pop-side 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-delay: 0.3s;
+    opacity: 0;
+    transform-origin: left bottom; /* Grows from the bottom-left corner */
+    white-space: nowrap;
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+[data-editor-theme="dark"] .speech-bubble {
+    background: rgba(42, 48, 60, 0.95);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* Las patitas funcionan como el rastro (tail) de la burbuja hacia el perro */
+.paw-tail {
+    position: absolute;
+    font-size: 1.2rem;
+    opacity: 0;
+}
+
+.paw-1 {
+    bottom: -15px;
+    left: -20px;
+    transform: rotate(30deg) scale(0.7);
+    animation: paw-fade-side 0.3s forwards;
+    animation-delay: 0.1s;
+}
+
+.paw-2 {
+    bottom: 2px;
+    left: -10px;
+    transform: rotate(10deg) scale(0.9);
+    animation: paw-fade-side 0.3s forwards;
+    animation-delay: 0.2s;
+}
+
+@keyframes paw-fade-side {
+    0% { opacity: 0; margin-left: -10px; }
+    100% { opacity: 1; margin-left: 0; }
+}
+
+@keyframes bubble-pop-side {
+    0% { opacity: 0; transform: translateY(-50%) scale(0.5); }
+    100% { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+
+/* --- Nuevo DiseÃ±o Modal Sobre el Creador --- */
+.about-modal-fresh {
+    padding: 0 !important; /* Override default padding */
+    border-radius: 12px;
+    max-width: 500px !important;
+}
+
+.about-hero {
+    background: linear-gradient(135deg, var(--primary-accent) 0%, rgba(82,95,127,0.8) 100%);
+    text-align: center;
+    padding: 2.5rem 1rem 0rem 1rem;
+    position: relative;
+    border-radius: 12px 12px 0 0;
+}
+
+/* Adjust mascota container for new hero */
+.about-hero .mascota-container {
+    margin: 0 auto -35px auto !important;
+}
+
+.about-hero .modal-img {
+    border: 4px solid var(--bg-color);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    width: 120px;
+    height: 120px;
+    background: var(--bg-color);
+}
+
+.about-body {
+    padding: 3rem 1.5rem 1.5rem 1.5rem;
+    text-align: center;
+}
+
+.about-body h2 {
+    margin: 0 0 0.25rem 0;
+    color: var(--color-text);
+    font-size: 1.25rem;
+}
+
+.about-subtitle {
+    color: var(--primary-accent);
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.about-description {
+    color: var(--color-muted-text);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+}
+
+.repo-card {
+    background: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.repo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.repo-icon {
+    color: var(--color-text);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.repo-info {
+    flex: 1;
+}
+
+.repo-info h5 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    color: var(--color-text);
+}
+
+.repo-info p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--color-muted-text);
+    line-height: 1.2;
+}
+
+.btn-repo {
+    background: #24292e;
+    color: #ffffff !important;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: opacity 0.2s, transform 0.2s;
+    white-space: nowrap;
+}
+
+.btn-repo:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+}
+
+.about-footer {
+    background: rgba(0,0,0,0.02);
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--color-muted-text);
+    border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Dark theme support */
+[data-editor-theme="dark"] .about-hero .modal-img {
+    border-color: var(--bg-color);
+    background: var(--bg-color);
+}
+[data-editor-theme="dark"] .repo-card {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+}
+[data-editor-theme="dark"] .about-footer {
+    background: rgba(255,255,255,0.02);
+    border-color: rgba(255,255,255,0.05);
+}
+[data-editor-theme="dark"] .btn-repo {
+    background: var(--color-text);
+    color: var(--bg-color) !important;
+}
+
+/* Adjust close button for hero */
+.about-modal-fresh .modal-close {
+    color: rgba(255,255,255,0.9);
+    z-index: 20;
+    background: rgba(0,0,0,0.2);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 1.2rem;
+}
+.about-modal-fresh .modal-close:hover {
+    color: #fff;
+    background: rgba(0,0,0,0.4);
+    transform: rotate(90deg);
+}

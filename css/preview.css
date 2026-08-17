@@ -1,0 +1,268 @@
+﻿/* --- Panel de Vista Previa (Derecha) --- */
+.preview-panel {
+    position: relative;
+    overflow-y: auto;
+    background-color: var(--color-light-bg-alt);
+    padding: 0;
+}
+
+.preview-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(to bottom, rgba(233, 236, 239, 0.95), rgba(233, 236, 239, 0.8));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Grupo de botones de historial (deshacer / rehacer) */
+.history-btn-group {
+    display: flex;
+    gap: 0.25rem;
+    margin-right: auto; /* Empuja el resto de botones a la derecha */
+    background-color: var(--color-light-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.2rem;
+}
+
+.history-btn-group .btn-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: calc(var(--radius-md) - 2px);
+    border: none;
+    transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+}
+
+.history-btn-group .btn-icon:not(:disabled):hover {
+    background-color: var(--color-light-bg-alt);
+    transform: scale(1.1);
+}
+
+.history-btn-group .btn-icon:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+#cv-preview-wrapper {
+    display: grid;
+    background-color: var(--color-white);
+    aspect-ratio: 210 / 297;
+    width: 100%;
+    max-width: 900px;
+    margin: 2rem auto;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-sm);
+    transition: box-shadow .3s ease;
+}
+
+#cv-preview-wrapper:hover {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+#cv-template {
+    font-family: var(--font-body);
+}
+
+/* Indicadores de EdiciÃ³n Granular Interactivis */
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h1,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h2,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h3,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h4,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper p,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper img,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper li,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper .avatar-container {
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, background-color 0.15s ease;
+    border-radius: 3px;
+}
+
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h1:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h2:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h3:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h4:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper p:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper img:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper li:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper .avatar-container:hover {
+    box-shadow: 0 0 0 2px var(--primary-accent, #525f7f);
+    background-color: rgba(82, 95, 127, 0.05);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.btn svg {
+    stroke-width: 2.5px;
+    transition: all 0.3s ease;
+    overflow: visible;
+}
+
+.btn svg .fill-layer {
+    fill: currentColor;
+    stroke: none;
+    opacity: 0;
+    transform: scale(0.8);
+    transform-origin: center;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn:hover svg {
+    transform: scale(1.1);
+}
+
+.btn:hover svg .fill-layer {
+    opacity: 0.25;
+    transform: scale(1);
+}
+
+.btn-primary {
+    background-color: var(--primary-accent);
+    color: var(--color-white);
+}
+
+.btn-primary:hover svg .fill-layer {
+    fill: var(--color-white);
+    opacity: 0.35;
+}
+
+.btn-secondary {
+    background-color: var(--color-light-bg-alt);
+    color: var(--color-dark-text);
+    border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-light-bg);
+}
+
+.btn-destructive {
+    background-color: var(--color-destructive);
+    color: var(--color-white);
+    border: 1px solid var(--color-destructive);
+}
+
+.btn-icon {
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+}
+
+.icon-compress {
+    display: none;
+}
+
+body.fullscreen-preview .icon-expand {
+    display: none;
+}
+
+body.fullscreen-preview .icon-compress {
+    display: block;
+}
+
+/* 
+  Modo pantalla completa:
+  - Oculta el panel del editor (si estÃ¡ visible) cambiando la estructura del grid.
+  - Esto solo debe aplicarse cuando NO estamos en modo de solo lectura, para evitar conflictos.
+*/
+body.fullscreen-preview:not(.read-only-mode) .cv-builder-container {
+    grid-template-columns: 0 1fr;
+}
+
+body.fullscreen-preview:not(.read-only-mode) .editor-panel {
+    overflow: hidden;
+}
+
+.btn-destructive:hover {
+    background-color: color-mix(in srgb, var(--color-destructive) 85%, #000);
+    border-color: color-mix(in srgb, var(--color-destructive) 85%, #000);
+}
+
+
+/* Estilos de ImpresiÃ³n */
+@media print {
+    @page {
+        size: A4;
+        margin: 0;
+    }
+
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        overflow: visible;
+    }
+
+    .editor-panel,
+    .preview-header {
+        display: none !important;
+    }
+
+    html,
+    body,
+    .cv-builder-container,
+    .preview-panel {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+
+    #cv-preview-wrapper {
+        display: grid !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 297mm;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        aspect-ratio: unset !important;
+        max-width: none !important;
+    }
+
+    #cv-template {
+        font-size: 10pt;
+    }
+}
+
+@media (max-width: 1200px) {
+    .cv-builder-container {
+        grid-template-columns: 400px 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .cv-builder-container {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-panel {
+        display: none;
+    }
+}
+

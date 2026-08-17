@@ -1,0 +1,179 @@
+﻿/* --- Tema Oscuro para el Editor --- */
+[data-editor-theme="dark"] .editor-panel {
+    background-color: #212529;
+    color: #f8f9fa;
+    border-right-color: #495057;
+}
+
+[data-editor-theme="dark"] .editor-header,
+[data-editor-theme="dark"] .editor-nav,
+[data-editor-theme="dark"] .item-header,
+[data-editor-theme="dark"] .add-item-container,
+[data-editor-theme="dark"] .subsection-title,
+[data-editor-theme="dark"] .subsection-title-flex,
+[data-editor-theme="dark"] .design-tabs,
+[data-editor-theme="dark"] .gradient-tabs {
+    border-color: #495057;
+    transition: border-color 0.4s ease;
+}
+
+[data-editor-theme="dark"] .subsection-description,
+[data-editor-theme="dark"] .color-picker-description {
+    color: #adb5bd;
+}
+
+[data-editor-theme="dark"] .editor-header p,
+[data-editor-theme="dark"] .section-subtitle,
+[data-editor-theme="dark"] .nav-item,
+[data-editor-theme="dark"] .design-tab,
+[data-editor-theme="dark"] .gradient-tab {
+    color: #adb5bd;
+}
+
+[data-editor-theme="dark"] .nav-item:hover,
+[data-editor-theme="dark"] .design-tab:hover,
+[data-editor-theme="dark"] .gradient-tab:hover {
+    color: #f8f9fa;
+    background-color: #343a40;
+}
+
+[data-editor-theme="dark"] .nav-item.active:hover {
+    background-color: var(--primary-accent);
+}
+
+[data-editor-theme="dark"] .form-group input,
+[data-editor-theme="dark"] .form-group textarea,
+[data-editor-theme="dark"] .form-group select,
+[data-editor-theme="dark"] .btn-secondary,
+[data-editor-theme="dark"] .avatar-tab,
+[data-editor-theme="dark"] .draggable-item,
+[data-editor-theme="dark"] .icon-selector {
+    background-color: #343a40;
+    color: #f8f9fa;
+    border-color: #495057;
+}
+
+[data-editor-theme="dark"] .text-color-picker:hover {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+[data-editor-theme="dark"] .background-target-selector:hover {
+    background-color: #343a40;
+}
+
+[data-editor-theme="dark"] .gradient-preview {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+[data-editor-theme="dark"] .btn-icon:hover {
+    background-color: #343a40;
+}
+
+[data-editor-theme="dark"] .skill-badge {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+[data-editor-theme="dark"] .btn-delete:hover {
+    color: var(--color-destructive);
+    background-color: color-mix(in srgb, var(--color-destructive) 25%, transparent);
+}
+
+[data-editor-theme="dark"] .layout-card {
+    background: #343a40;
+    border-color: #495057;
+}
+
+[data-editor-theme="dark"] .footer-item {
+    background-color: #343a40;
+    border-color: #495057;
+    color: #f8f9fa;
+}
+
+[data-editor-theme="dark"] .editor-footer {
+    border-top-color: #495057;
+    color: #adb5bd;
+    transition: border-color 0.4s ease, color 0.4s ease;
+}
+
+[data-editor-theme="dark"] .layout-card:hover,
+[data-editor-theme="dark"] .layout-card.active {
+    border-color: var(--primary-accent);
+}
+
+/* --- Estilos para el interruptor de tema --- */
+.theme-toggle-switch {
+    cursor: pointer;
+}
+
+.theme-toggle-track {
+    width: 50px;
+    height: 26px;
+    background-color: #495057;
+    border-radius: 13px;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.4s ease;
+}
+
+.theme-toggle-thumb {
+    width: 20px;
+    height: 20px;
+    background-color: var(--color-white);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    transform: translateX(0);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.theme-toggle-thumb img {
+    /* Hacemos que ambos iconos ocupen la misma celda del grid para que se superpongan */
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    width: 14px;
+    height: 14px;
+}
+
+.theme-icon-sun {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+.theme-icon-moon {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+[data-editor-theme="dark"] .theme-toggle-track {
+    background-color: var(--primary-accent);
+}
+
+[data-editor-theme="dark"] .theme-toggle-thumb {
+    transform: translateX(24px);
+}
+
+[data-editor-theme="dark"] .theme-icon-sun {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+[data-editor-theme="dark"] .theme-icon-moon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+/* SoluciÃ³n: Invierte el color del SVG de la luna en modo oscuro para que sea visible */
+[data-editor-theme="dark"] .theme-icon-moon {
+    filter: invert(1);
+}
+
+
+
+
+
+

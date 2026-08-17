@@ -1,0 +1,66 @@
+﻿:root {
+    --font-body: 'Inter', sans-serif;
+    --font-heading: 'Inter', sans-serif;
+    --font-serif: 'Lora', serif;
+    --font-mono: 'Source Code Pro', monospace;
+
+    --radius-sm: 0.3rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.8rem;
+
+    --color-light-bg: #f8f9fa;
+    --color-light-bg-alt: #e9ecef;
+    --color-dark-text: #212529;
+    --color-muted-text: #6c757d;
+    --color-border: #dee2e6;
+    --color-white: #ffffff;
+    --color-destructive: #dc3545;
+
+    --color-accent-blue: #0d6efd;
+    --color-accent-green: #198754;
+    --color-accent-purple: #6f42c1;
+    --color-accent-red: #dc3545;
+    --color-accent-gray: #525f7f;
+
+    --primary-accent: var(--color-accent-gray);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+[data-theme="blue"] {
+    --primary-accent: var(--color-accent-blue);
+}
+
+[data-theme="green"] {
+    --primary-accent: var(--color-accent-green);
+}
+
+[data-theme="purple"] {
+    --primary-accent: var(--color-accent-purple);
+}
+
+[data-theme="red"] {
+    --primary-accent: var(--color-accent-red);
+}
+
+[data-theme="gray"] {
+    --primary-accent: var(--color-accent-gray);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--color-light-bg);
+    background-image: linear-gradient(to top right, #f8f9fa, #e9ecef);
+    color: var(--color-dark-text);
+    font-size: 14px;
+    line-height: 1.6;
+    overflow: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
