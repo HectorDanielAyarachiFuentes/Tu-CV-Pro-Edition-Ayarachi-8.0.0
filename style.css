@@ -407,6 +407,32 @@ body {
     font-family: var(--font-body);
 }
 
+/* Indicadores de Edición Granular Interactivis */
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h1,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h2,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h3,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h4,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper p,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper img,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper li,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper .avatar-container {
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, background-color 0.15s ease;
+    border-radius: 3px;
+}
+
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h1:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h2:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h3:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper h4:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper p:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper img:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper li:hover,
+body:not(.read-only-mode):not(.fullscreen-preview) #cv-preview-wrapper .avatar-container:hover {
+    box-shadow: 0 0 0 2px var(--primary-accent, #525f7f);
+    background-color: rgba(82, 95, 127, 0.05);
+}
+
 .btn {
     display: inline-flex;
     align-items: center;

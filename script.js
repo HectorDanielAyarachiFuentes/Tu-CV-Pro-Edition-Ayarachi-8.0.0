@@ -383,10 +383,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         // --- Funciones de renderizado de secciones ---
-        renderGenericSection: (title, items, renderItemFn, color, style = '') => {
+        renderGenericSection: (title, items, renderItemFn, color, style = '', sectionKey = '') => {
             const titleColor = cvData.sectionTitleColor || color;
             if (!items || items.length === 0) return '';
-            return `<div style="margin-top:1.5rem; ${style}"><h3 data-cv-color="sectionTitleColor" style="font-family: var(--font-heading); font-size:1rem; font-weight:600; color:${titleColor}; border-bottom:2px solid ${titleColor}; padding-bottom:.25rem; margin-bottom:1rem; display:inline-block; text-transform: uppercase;">${title}</h3>${items.map(renderItemFn).join('')}</div>`;
+            const keyAttr = sectionKey ? `data-section-key="${sectionKey}"` : '';
+            return `<div ${keyAttr} style="margin-top:1.5rem; ${style}"><h3 data-cv-color="sectionTitleColor" style="font-family: var(--font-heading); font-size:1rem; font-weight:600; color:${titleColor}; border-bottom:2px solid ${titleColor}; padding-bottom:.25rem; margin-bottom:1rem; display:inline-block; text-transform: uppercase;">${title}</h3>${items.map(renderItemFn).join('')}</div>`;
         },
         renderOrderedSections: (data, layoutName = '') => {
             const darkLayouts = ['minimalist-dark', 'midnight', 'tech-lead', 'visionary'];
@@ -396,24 +397,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleColor = data.sectionTitleColor || (isDark ? '#ff5f56' : data.themeColor);
 
             const sectionRenderers = {
-                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{ text: data.personalInfo.summary }] : [], item => `<p data-cv-color="textColorDark" style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${textColor};">${item.text}</p>`, opts.color || titleColor, opts.style),
-                experience: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Experiencia', data.experience, e => templateHelpers.renderExperienceItem(e, data, textColor, mutedColor), opts.color || titleColor, opts.style),
-                education: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Educación', data.education, e => templateHelpers.renderEducationItem(e, data, textColor, mutedColor), opts.color || titleColor, opts.style),
+                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{ text: data.personalInfo.summary }] : [], item => `<p data-cv-color="textColorDark" style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${textColor};">${item.text}</p>`, opts.color || titleColor, opts.style, 'summary'),
+                experience: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Experiencia', data.experience, e => templateHelpers.renderExperienceItem(e, data, textColor, mutedColor), opts.color || titleColor, opts.style, 'experience'),
+                education: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Educación', data.education, e => templateHelpers.renderEducationItem(e, data, textColor, mutedColor), opts.color || titleColor, opts.style, 'education'),
                 skills: (opts = {}) => {
                     let content;
                     if (layoutName === 'academic') {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li style="color:${textColor};">${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || titleColor).replace('<div', '<ul').replace('</div>', '</ul>');
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li style="color:${textColor};">${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || titleColor, opts.style, 'skills').replace('<div', '<ul').replace('</div>', '</ul>');
                     } else if (layoutName === 'executive' || layoutName === 'creative') {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<span style="display:inline-block; background-color:${isDark ? '#222' : '#f1f1f1'}; color:${textColor}; padding: 0.3rem 0.8rem; border-radius: 4px; margin: 0.2rem; font-size:0.85rem;">${s.name}</span>`, opts.color || titleColor);
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<span style="display:inline-block; background-color:${isDark ? '#222' : '#f1f1f1'}; color:${textColor}; padding: 0.3rem 0.8rem; border-radius: 4px; margin: 0.2rem; font-size:0.85rem;">${s.name}</span>`, opts.color || titleColor, opts.style, 'skills');
                     } else if (layoutName === 'technical' || layoutName === 'tech-lead') {
-                        content = templateHelpers.renderGenericSection(opts.title || '// SKILLS', data.skills, s => `<span style="display:inline-block; border:1px solid ${data.themeColor}; color:${data.themeColor}; padding: 0.2rem 0.6rem; border-radius: 4px; margin: 0.2rem; font-size:0.8rem;">${s.name}</span>`, opts.color || titleColor);
+                        content = templateHelpers.renderGenericSection(opts.title || '// SKILLS', data.skills, s => `<span style="display:inline-block; border:1px solid ${data.themeColor}; color:${data.themeColor}; padding: 0.2rem 0.6rem; border-radius: 4px; margin: 0.2rem; font-size:0.8rem;">${s.name}</span>`, opts.color || titleColor, opts.style, 'skills');
                     } else {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p data-cv-color="textColorDark" style="font-size:0.8rem;margin-bottom:.4rem; color:${textColor};">${s.name}<span data-cv-color="textColorMuted" style="font-size:.7rem;opacity:.8; color:${mutedColor};"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || titleColor);
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p data-cv-color="textColorDark" style="font-size:0.8rem;margin-bottom:.4rem; color:${textColor};">${s.name}<span data-cv-color="textColorMuted" style="font-size:.7rem;opacity:.8; color:${mutedColor};"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || titleColor, opts.style, 'skills');
                     }
                     return content;
                 },
-                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-cv-color="textColorDark" style="background:${isDark ? '#222' : '#f4f4f4'}; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${textColor};">${item.description}</div>`, opts.color || titleColor, opts.style),
-                portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid ${isDark ? '#333' : '#eee'};"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${textColor};">${item.title}</p></div>`, opts.color || titleColor, opts.style || 'column-count:3; column-gap:1rem;')
+                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-cv-color="textColorDark" style="background:${isDark ? '#222' : '#f4f4f4'}; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${textColor};">${item.description}</div>`, opts.color || titleColor, opts.style, 'impacts'),
+                portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid ${isDark ? '#333' : '#eee'};"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${textColor};">${item.title}</p></div>`, opts.color || titleColor, opts.style || 'column-count:3; column-gap:1rem;', 'portfolio')
             };
 
             return [
@@ -2061,6 +2062,87 @@ document.addEventListener('DOMContentLoaded', () => {
                 setActiveSection('avatar'); // Recargamos el formulario para mostrarla
             }
         });
+
+        // --- Navegador Inteligente Interactivo al Clic Simple ---
+        const handlePreviewElementClick = (e) => {
+            if (document.body.classList.contains('fullscreen-preview') || document.body.classList.contains('read-only-mode')) return;
+
+            const target = e.target;
+            let sectionName = null;
+            let focusFieldName = null;
+
+            // 1. Detección por data-section-key explícito en el contenedor
+            const containerSection = target.closest('[data-section-key]')?.dataset.sectionKey;
+            if (containerSection) {
+                if (containerSection === 'summary') {
+                    sectionName = 'personal';
+                    focusFieldName = 'summary';
+                } else {
+                    sectionName = containerSection;
+                }
+            }
+
+            // 2. Detección por elementos estructurales de cabecera / pie / avatar
+            if (!sectionName) {
+                if (target.closest('.avatar-container, [data-cv-avatar]') && !target.closest('header, footer')) {
+                    sectionName = 'avatar';
+                } else if (target.tagName === 'H1' || target.closest('h1')) {
+                    sectionName = 'personal';
+                    focusFieldName = 'firstName';
+                } else if (target.tagName === 'H2' || target.closest('h2')) {
+                    sectionName = 'personal';
+                    focusFieldName = 'title';
+                } else if (target.closest('footer')) {
+                    sectionName = 'footer';
+                }
+            }
+
+            // 3. Fallback Heurístico Robusto por Texto
+            if (!sectionName) {
+                const text = (target.closest('div, section, p, h3, h4, li')?.textContent || '').toLowerCase();
+
+                if (text.includes('educa') || text.includes('ingenier') || text.includes('universidad') || text.includes('sistemas') || text.includes('titul')) {
+                    sectionName = 'education';
+                } else if (text.includes('experien') || text.includes('desarrollador backend') || text.includes('tech solutions') || text.includes('senior')) {
+                    sectionName = 'experience';
+                } else if (text.includes('habilidad') || text.includes('skill') || text.includes('python') || text.includes('aws') || text.includes('docker') || text.includes('javascript')) {
+                    sectionName = 'skills';
+                } else if (text.includes('impacto') || text.includes('logro') || text.includes('consultas')) {
+                    sectionName = 'impacts';
+                } else if (text.includes('portafolio') || text.includes('portfolio') || text.includes('proyecto')) {
+                    sectionName = 'portfolio';
+                } else if (text.includes('resumen') || text.includes('perfil') || text.includes('backend')) {
+                    sectionName = 'personal';
+                    focusFieldName = 'summary';
+                } else if (target.closest('header')) {
+                    sectionName = 'personal';
+                    focusFieldName = 'firstName';
+                }
+            }
+
+            if (sectionName) {
+                setActiveSection(sectionName);
+                setTimeout(() => {
+                    let input = null;
+                    if (focusFieldName) {
+                        input = formWrapper.querySelector(`[name="${focusFieldName}"]`);
+                    }
+                    if (!input) {
+                        input = formWrapper.querySelector('input:not([type="hidden"]), textarea');
+                    }
+                    if (input) {
+                        input.focus();
+                        input.classList.add('highlight-pulse');
+                        setTimeout(() => input.classList.remove('highlight-pulse'), 1200);
+                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 50);
+                showToast(`✏️ Redirigido al editor: ${sectionName.toUpperCase()}`, 'info');
+            }
+        };
+
+        // 1 clic simple en CUALQUIER elemento del CV redirige al instante a su sección del editor
+        cvPreviewWrapper.addEventListener('click', handlePreviewElementClick);
 
         // Renderizado movido hacia arriba para ganar velocidad
     }
