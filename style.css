@@ -1366,6 +1366,11 @@ input[type="color"]::-webkit-color-swatch {
 [data-editor-theme="dark"] .design-tab:hover,
 [data-editor-theme="dark"] .gradient-tab:hover {
     color: #f8f9fa;
+    background-color: #343a40;
+}
+
+[data-editor-theme="dark"] .nav-item.active:hover {
+    background-color: var(--primary-accent);
 }
 
 [data-editor-theme="dark"] .form-group input,
