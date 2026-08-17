@@ -1,4 +1,4 @@
-﻿/* --- Estilos de NotificaciÃ³n de Guardado --- */
+/* --- Estilos de NotificaciÃ³n de Guardado --- */
 .save-notification {
     position: absolute;
     top: 1.5rem;
@@ -368,11 +368,11 @@
 }
 
 .about-hero .modal-img {
-    border: 4px solid var(--bg-color);
+    border: 4px solid #fff;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     width: 120px;
     height: 120px;
-    background: var(--bg-color);
+    background: #fff;
 }
 
 .about-body {
@@ -382,7 +382,7 @@
 
 .about-body h2 {
     margin: 0 0 0.25rem 0;
-    color: var(--color-text);
+    color: var(--color-dark-text);
     font-size: 1.25rem;
 }
 
@@ -419,7 +419,7 @@
 }
 
 .repo-icon {
-    color: var(--color-text);
+    color: var(--color-dark-text);
     margin-bottom: 0;
     display: flex;
     align-items: center;
@@ -432,7 +432,7 @@
 .repo-info h5 {
     margin: 0 0 0.25rem 0;
     font-size: 1rem;
-    color: var(--color-text);
+    color: var(--color-dark-text);
 }
 
 .repo-info p {
@@ -470,8 +470,21 @@
 
 /* Dark theme support */
 [data-editor-theme="dark"] .about-hero .modal-img {
-    border-color: var(--bg-color);
-    background: var(--bg-color);
+    border-color: #212529;
+    background: #212529;
+}
+[data-editor-theme="dark"] .about-body h2,
+[data-editor-theme="dark"] .repo-info h5,
+[data-editor-theme="dark"] .repo-icon {
+    color: #f8f9fa;
+}
+[data-editor-theme="dark"] .about-description,
+[data-editor-theme="dark"] .repo-info p,
+[data-editor-theme="dark"] .about-footer {
+    color: #ced4da;
+}
+[data-editor-theme="dark"] .about-subtitle {
+    color: #6ea8fe;
 }
 [data-editor-theme="dark"] .repo-card {
     background: rgba(255,255,255,0.05);
@@ -482,8 +495,12 @@
     border-color: rgba(255,255,255,0.05);
 }
 [data-editor-theme="dark"] .btn-repo {
-    background: var(--color-text);
-    color: var(--bg-color) !important;
+    background: #f8f9fa;
+    color: #212529 !important;
+}
+[data-editor-theme="dark"] .paw-tail,
+[data-editor-theme="dark"] .about-footer {
+    filter: brightness(1.5);
 }
 
 /* Adjust close button for hero */
