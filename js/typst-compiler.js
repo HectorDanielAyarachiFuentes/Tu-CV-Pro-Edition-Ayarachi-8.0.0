@@ -23,7 +23,7 @@ const TypstCompiler = (() => {
   // Cargar las plantillas desde json-typst/typst.json
   const loadTypstTemplates = async () => {
     try {
-      const response = await fetch('json-typst/typst.json');
+      const response = await fetch('data/typst/typst.json');
       typstTemplates = await response.json();
       return typstTemplates;
     } catch (error) {

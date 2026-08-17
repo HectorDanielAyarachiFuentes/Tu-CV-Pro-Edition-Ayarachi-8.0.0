@@ -103,14 +103,14 @@
     // --- Carga de recursos ---
     const loadIcons = async () => {
         try {
-            const [iconListResponse, cacheResponse] = await Promise.all([
-                fetch('icon.json'),
-                fetch('svg-cache.json')
+            const [iconsResponse, svgCacheResponse] = await Promise.all([
+                fetch('data/icon.json'),
+                fetch('data/svg-cache.json')
             ]);
-            const iconNames = await iconListResponse.json();
-            svgCache = await cacheResponse.json();
+            const iconNames = await iconsResponse.json();
+            svgCache = await svgCacheResponse.json();
 
-            loadedIcons = iconNames.map(name => `icon-SVG/${name}.svg`);
+            loadedIcons = iconNames.map(name => `assets/icons/svg/${name}.svg`);
 
             // Cargar SVGs que no están en la caché
             const iconsToFetch = loadedIcons.filter(path => !svgCache[path]);
@@ -129,13 +129,13 @@
 
     const loadGradientPresets = async () => {
         try {
-            const [responseRaya, responseGradients] = await Promise.all([
-                fetch('json-gradientes/gradientesraya.json'),
-                fetch('json-gradientes/gradients.json')
+            const [stripeResponse, smoothResponse] = await Promise.all([
+                fetch('data/gradients/gradientesraya.json'),
+                fetch('data/gradients/gradients.json')
             ]);
 
-            loadedGradients.raya = await responseRaya.json();
-            const gradientsJson = await responseGradients.json();
+            loadedGradients.raya = await stripeResponse.json();
+            const gradientsJson = await smoothResponse.json();
 
             loadedGradients.simple = gradientsJson.map(g =>
                 `linear-gradient(45deg, ${g.colors.join(', ')})`
@@ -151,7 +151,7 @@
     const loadTemplates = async () => {
         try {
             const [response] = await Promise.all([
-                fetch('json-html/html.json'),
+                fetch('data/html/html.json'),
                 typeof TypstCompiler !== 'undefined' ? TypstCompiler.loadTypstTemplates() : Promise.resolve()
             ]);
             const templateStrings = await response.json();

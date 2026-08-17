@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const undoBtn = document.getElementById('undo-btn');
     const redoBtn = document.getElementById('redo-btn');
 
-    const aboutAudio = new Audio('Dulce-song/Dulce-song.mp3');
+    const aboutAudio = new Audio('assets/audio/Dulce-song.mp3');
 
     // Alias cortos para el acceso a los módulos
     const state = CvApp.state;
