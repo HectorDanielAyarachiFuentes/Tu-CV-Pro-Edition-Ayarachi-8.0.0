@@ -403,18 +403,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 skills: (opts = {}) => {
                     let content;
                     if (layoutName === 'academic') {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li style="color:${textColor};">${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || titleColor, opts.style, 'skills').replace('<div', '<ul').replace('</div>', '</ul>');
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li data-section-key="skills" data-id="${s.id || ''}" style="color:${textColor}; cursor:pointer;">${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || titleColor, opts.style, 'skills').replace('<div', '<ul').replace('</div>', '</ul>');
                     } else if (layoutName === 'executive' || layoutName === 'creative') {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<span style="display:inline-block; background-color:${isDark ? '#222' : '#f1f1f1'}; color:${textColor}; padding: 0.3rem 0.8rem; border-radius: 4px; margin: 0.2rem; font-size:0.85rem;">${s.name}</span>`, opts.color || titleColor, opts.style, 'skills');
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<span data-section-key="skills" data-id="${s.id || ''}" style="display:inline-block; background-color:${isDark ? '#222' : '#f1f1f1'}; color:${textColor}; padding: 0.3rem 0.8rem; border-radius: 4px; margin: 0.2rem; font-size:0.85rem; cursor:pointer;">${s.name}</span>`, opts.color || titleColor, opts.style, 'skills');
                     } else if (layoutName === 'technical' || layoutName === 'tech-lead') {
-                        content = templateHelpers.renderGenericSection(opts.title || '// SKILLS', data.skills, s => `<span style="display:inline-block; border:1px solid ${data.themeColor}; color:${data.themeColor}; padding: 0.2rem 0.6rem; border-radius: 4px; margin: 0.2rem; font-size:0.8rem;">${s.name}</span>`, opts.color || titleColor, opts.style, 'skills');
+                        content = templateHelpers.renderGenericSection(opts.title || '// SKILLS', data.skills, s => `<span data-section-key="skills" data-id="${s.id || ''}" style="display:inline-block; border:1px solid ${data.themeColor}; color:${data.themeColor}; padding: 0.2rem 0.6rem; border-radius: 4px; margin: 0.2rem; font-size:0.8rem; cursor:pointer;">${s.name}</span>`, opts.color || titleColor, opts.style, 'skills');
                     } else {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p data-cv-color="textColorDark" style="font-size:0.8rem;margin-bottom:.4rem; color:${textColor};">${s.name}<span data-cv-color="textColorMuted" style="font-size:.7rem;opacity:.8; color:${mutedColor};"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || titleColor, opts.style, 'skills');
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p data-section-key="skills" data-id="${s.id || ''}" style="font-size:0.8rem;margin-bottom:.4rem; color:${textColor}; cursor:pointer;">${s.name}<span data-cv-color="textColorMuted" style="font-size:.7rem;opacity:.8; color:${mutedColor};"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || titleColor, opts.style, 'skills');
                     }
                     return content;
                 },
-                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-cv-color="textColorDark" style="background:${isDark ? '#222' : '#f4f4f4'}; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${textColor};">${item.description}</div>`, opts.color || titleColor, opts.style, 'impacts'),
-                portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid ${isDark ? '#333' : '#eee'};"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${textColor};">${item.title}</p></div>`, opts.color || titleColor, opts.style || 'column-count:3; column-gap:1rem;', 'portfolio')
+                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-section-key="impacts" data-id="${item.id || ''}" data-field="description" data-cv-color="textColorDark" style="background:${isDark ? '#222' : '#f4f4f4'}; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${textColor}; cursor:pointer;">${item.description}</div>`, opts.color || titleColor, opts.style, 'impacts'),
+                portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div data-section-key="portfolio" data-id="${item.id || ''}" style="break-inside: avoid; margin-bottom: 1rem; cursor:pointer;"><img data-field="img" src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid ${isDark ? '#333' : '#eee'};"/><p data-field="title" style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${textColor};">${item.title}</p></div>`, opts.color || titleColor, opts.style || 'column-count:3; column-gap:1rem;', 'portfolio')
             };
 
             return [
@@ -2070,7 +2070,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = e.target;
             let sectionName = null;
             let focusFieldName = target.closest('[data-field]')?.dataset.field || null;
-            let itemId = null;
+            let itemId = target.closest('[data-id]')?.dataset.id || null;
 
             // 1. Detección Prioritaria por Avatar / Foto (incluso dentro de header)
             if (target.closest('.avatar-container, [data-cv-avatar]') || (target.tagName === 'IMG' && !target.closest('[data-section-key="portfolio"]')) || target.closest('svg[viewBox]')) {
@@ -2095,7 +2095,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sectionEl = target.closest('[data-section-key]');
                 if (sectionEl) {
                     const key = sectionEl.dataset.sectionKey;
-                    itemId = sectionEl.dataset.id;
 
                     if (key === 'summary') {
                         sectionName = 'personal';
