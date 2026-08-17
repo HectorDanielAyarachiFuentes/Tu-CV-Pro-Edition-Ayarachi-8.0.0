@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formWrapper = document.getElementById('form-section-wrapper');
     const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const downloadHtmlBtn = document.getElementById('download-html-btn');
+    const downloadTypstBtn = document.getElementById('download-typst-btn');
     const resetCvBtn = document.getElementById('reset-cv-btn');
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     const toggleFullscreenBtn = document.getElementById('toggle-fullscreen-btn');
@@ -432,10 +433,13 @@ document.addEventListener('DOMContentLoaded', () => {
         formRenderers.structure = () => renderForm(renderStructureFormHTML());
     };
 
-    // --- NUEVA FUNCIÓN PARA CARGAR PLANTILLAS ---
+    // --- NUEVA FUNCIÓN PARA CARGAR PLANTILLAS (HTML Y TYPST) ---
     const loadTemplates = async () => {
         try {
-            const response = await fetch('json-html/html.json');
+            const [response] = await Promise.all([
+                fetch('json-html/html.json'),
+                typeof TypstCompiler !== 'undefined' ? TypstCompiler.loadTypstTemplates() : Promise.resolve()
+            ]);
             const templateStrings = await response.json();
 
             // Convertir las cadenas de texto de vuelta a funciones
@@ -696,6 +700,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         const templateFn = templates[layoutName];
                         if (templateFn) {
                             container.innerHTML = templateFn(cvData, templateHelpers);
+                            const child = container.firstElementChild;
+                            if (child) {
+                                const containerWidth = container.clientWidth || 120;
+                                const scale = containerWidth / 794;
+                                child.style.width = '794px';
+                                child.style.height = '1123px';
+                                child.style.transform = `scale(${scale})`;
+                                child.style.transformOrigin = 'top left';
+                                child.style.pointerEvents = 'none';
+                            }
                         }
                     }
                 });
@@ -1913,6 +1927,14 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         downloadPdfBtn.addEventListener('click', handleDownloadPdf);
         downloadHtmlBtn.addEventListener('click', downloadHtml);
+        if (downloadTypstBtn) {
+            downloadTypstBtn.addEventListener('click', () => {
+                if (typeof TypstCompiler !== 'undefined') {
+                    TypstCompiler.downloadTypstFile(cvData, cvData.layout);
+                    showToast('¡Plantilla Typst (.typ) exportada con éxito!', 'success');
+                }
+            });
+        }
         shareCvBtn.addEventListener('click', handleShareClick);
         themeToggleBtn.addEventListener('click', handleThemeToggle);
         toggleFullscreenBtn.addEventListener('click', handleFullscreenToggle);

@@ -660,6 +660,28 @@ input[type="color"]::-webkit-color-swatch {
     font-size: 0.9rem;
 }
 
+.mini-preview-container {
+    width: 100%;
+    aspect-ratio: 210 / 297;
+    position: relative;
+    overflow: hidden;
+    background-color: #ffffff;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    margin-bottom: 0.25rem;
+}
+
+.mini-preview-container > * {
+    width: 794px !important;
+    height: 1123px !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+    pointer-events: none;
+    user-select: none;
+}
+
 /* === NUEVOS ESTILOS PARA EL SELECTOR DE GRADIENTES === */
 .gradient-selector {
     display: grid;
