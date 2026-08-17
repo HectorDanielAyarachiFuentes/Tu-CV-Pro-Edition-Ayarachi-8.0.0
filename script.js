@@ -2090,28 +2090,57 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (target.closest('footer')) {
                 sectionName = 'footer';
             } 
-            // 5. Detección por data-section-key explícito en el contenedor o ítem
+            // 5. Detección por Bloque o Datos de Contacto (Teléfono, Email, Dirección, Web)
             else {
-                const sectionEl = target.closest('[data-section-key]');
-                if (sectionEl) {
-                    const key = sectionEl.dataset.sectionKey;
+                const text = (target.textContent || '').toLowerCase();
+                const parentText = (target.closest('p, div, h3, header, aside, section')?.textContent || '').toLowerCase();
 
-                    if (key === 'summary') {
-                        sectionName = 'personal';
-                        focusFieldName = 'summary';
-                    } else {
-                        sectionName = key;
+                if (text.includes('teléfono') || text.includes('tel:') || (parentText.includes('contacto') && (text.includes('tel') || /\d{6,}/.test(text)))) {
+                    sectionName = 'personal';
+                    focusFieldName = 'phone';
+                } else if (text.includes('email') || text.includes('@') || (parentText.includes('contacto') && text.includes('email'))) {
+                    sectionName = 'personal';
+                    focusFieldName = 'email';
+                } else if (text.includes('dirección') || text.includes('ubicación') || text.includes('neuquen') || text.includes('argentina') || (parentText.includes('contacto') && text.includes('dirección'))) {
+                    sectionName = 'personal';
+                    focusFieldName = 'address';
+                } else if (text.includes('web') || text.includes('linkedin') || text.includes('github') || text.includes('http') || (parentText.includes('contacto') && text.includes('web'))) {
+                    sectionName = 'personal';
+                    focusFieldName = 'website';
+                } else if (target.closest('h3')?.textContent.toLowerCase().includes('contacto') || text.includes('contacto')) {
+                    sectionName = 'personal';
+                    focusFieldName = 'phone';
+                } else {
+                    const sectionEl = target.closest('[data-section-key]');
+                    if (sectionEl) {
+                        const key = sectionEl.dataset.sectionKey;
+
+                        if (key === 'summary') {
+                            sectionName = 'personal';
+                            focusFieldName = 'summary';
+                        } else {
+                            sectionName = key;
+                        }
                     }
                 }
             }
 
-            // 6. Fallback Heurístico únicamente por Títulos de Sección (H3) o Header
+            // 6. Fallback Inteligente por coincidencia con las Habilidades del usuario o Títulos de Sección
             if (!sectionName) {
+                const textTrim = (target.textContent || '').trim().toLowerCase();
+                const parentText = (target.closest('div, section, aside, p, li, h3')?.textContent || '').toLowerCase();
                 const titleText = (target.closest('h3')?.textContent || (target.tagName === 'H3' ? target.textContent : '')).toLowerCase();
 
-                if (titleText.includes('experien')) sectionName = 'experience';
+                // Detección automática por coincidencia con cualquier habilidad definida por el usuario
+                const matchedSkill = (cvData.skills || []).find(s => s.name && (s.name.toLowerCase() === textTrim || (textTrim.length < 35 && textTrim.includes(s.name.toLowerCase()))));
+
+                if (matchedSkill) {
+                    sectionName = 'skills';
+                    itemId = matchedSkill.id;
+                } else if (titleText.includes('habilidad') || titleText.includes('skill') || parentText.includes('habilidad')) {
+                    sectionName = 'skills';
+                } else if (titleText.includes('experien')) sectionName = 'experience';
                 else if (titleText.includes('educa')) sectionName = 'education';
-                else if (titleText.includes('habilidad') || titleText.includes('skill')) sectionName = 'skills';
                 else if (titleText.includes('impacto') || titleText.includes('logro')) sectionName = 'impacts';
                 else if (titleText.includes('portafolio') || titleText.includes('portfolio')) sectionName = 'portfolio';
                 else if (titleText.includes('resumen') || titleText.includes('perfil')) {
@@ -2126,32 +2155,48 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sectionName) {
                 setActiveSection(sectionName);
                 setTimeout(() => {
-                    let input = null;
-                    // 1. Si el clic fue en un ítem específico (ej. educación o experiencia), buscar la casilla exacta de ese campo dentro de ese ítem
-                    if (itemId) {
-                        const itemEl = formWrapper.querySelector(`.item[data-id="${itemId}"]`);
+                    let targetEl = null;
+                    const clickedText = (target.textContent || '').trim().toLowerCase();
+
+                    // 1. Si la sección es Habilidades, buscar la insignia (skill-badge) exacta
+                    if (sectionName === 'skills') {
+                        if (itemId) {
+                            targetEl = formWrapper.querySelector(`.skill-badge[data-id="${itemId}"]`);
+                        }
+                        if (!targetEl && clickedText) {
+                            targetEl = Array.from(formWrapper.querySelectorAll('.skill-badge'))
+                                .find(badge => badge.textContent.toLowerCase().includes(clickedText));
+                        }
+                    }
+
+                    // 2. Si el clic fue en un ítem específico (experiencia, educación, portafolio, impacto)
+                    if (!targetEl && itemId) {
+                        const itemEl = formWrapper.querySelector(`[data-id="${itemId}"]`);
                         if (itemEl) {
                             if (focusFieldName) {
-                                input = itemEl.querySelector(`[name="${focusFieldName}"]`);
+                                targetEl = itemEl.querySelector(`[name="${focusFieldName}"]`);
                             }
-                            if (!input) {
-                                input = itemEl.querySelector('input:not([type="hidden"]), textarea');
+                            if (!targetEl) {
+                                targetEl = itemEl.querySelector('input:not([type="hidden"]), textarea') || itemEl;
                             }
                         }
                     }
-                    // 2. Si no hay ítem dinámico pero sí campo definido (ej. firstName, title, summary)
-                    if (!input && focusFieldName) {
-                        input = formWrapper.querySelector(`[name="${focusFieldName}"]`);
+
+                    // 3. Si no hay ítem dinámico pero sí campo definido (ej. firstName, title, summary, phone, email, address, website)
+                    if (!targetEl && focusFieldName) {
+                        targetEl = formWrapper.querySelector(`[name="${focusFieldName}"]`);
                     }
-                    // 3. Fallback al primer input disponible de la sección
-                    if (!input) {
-                        input = formWrapper.querySelector('input:not([type="hidden"]), textarea');
+
+                    // 4. Fallback al primer input disponible de la sección
+                    if (!targetEl) {
+                        targetEl = formWrapper.querySelector('input:not([type="hidden"]), textarea');
                     }
-                    if (input) {
-                        input.focus();
-                        input.classList.add('highlight-pulse');
-                        setTimeout(() => input.classList.remove('highlight-pulse'), 1200);
-                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    if (targetEl) {
+                        if (typeof targetEl.focus === 'function') targetEl.focus();
+                        targetEl.classList.add('highlight-pulse');
+                        setTimeout(() => targetEl.classList.remove('highlight-pulse'), 1200);
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }, 50);
                 showToast(`✏️ Redirigido al editor: ${sectionName.toUpperCase()}`, 'info');
