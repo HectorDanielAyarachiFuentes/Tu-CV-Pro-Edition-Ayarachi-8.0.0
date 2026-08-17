@@ -374,12 +374,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderExperienceItem: (e, data, textColorOverride = null, mutedColorOverride = null) => {
             const textColor = textColorOverride || data.textColorDark || '#212529';
             const mutedColor = mutedColorOverride || data.textColorMuted || '#6c757d';
-            return `<div style="margin-bottom:1.2rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.95rem;font-weight:600; color:${textColor};">${e.position || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${mutedColor};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${textColor}; opacity:0.9;">${e.company || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.55; color:${textColor}; opacity:0.85;">${e.description || ''}</p></div>`;
+            return `<div data-section-key="experience" data-id="${e.id || ''}" style="margin-bottom:1.2rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 data-field="position" style="font-size:.95rem;font-weight:600; color:${textColor};">${e.position || ''}</h4><p data-field="startDate" style="font-size:.75rem;font-weight:500;color:${mutedColor};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p data-field="company" style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${textColor}; opacity:0.9;">${e.company || ''}</p><p data-field="description" style="font-size:.8rem;white-space:pre-wrap;line-height:1.55; color:${textColor}; opacity:0.85;">${e.description || ''}</p></div>`;
         },
         renderEducationItem: (e, data, textColorOverride = null, mutedColorOverride = null) => {
             const textColor = textColorOverride || data.textColorDark || '#212529';
             const mutedColor = mutedColorOverride || data.textColorMuted || '#6c757d';
-            return `<div style="margin-bottom:1rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.95rem;font-weight:600; color:${textColor};">${e.degree || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${mutedColor};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${textColor}; opacity:0.9;">${e.institution || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.55; color:${textColor}; opacity:0.85;">${e.description || ''}</p></div>`;
+            return `<div data-section-key="education" data-id="${e.id || ''}" style="margin-bottom:1rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 data-field="degree" style="font-size:.95rem;font-weight:600; color:${textColor};">${e.degree || ''}</h4><p data-field="startDate" style="font-size:.75rem;font-weight:500;color:${mutedColor};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p data-field="institution" style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${textColor}; opacity:0.9;">${e.institution || ''}</p><p data-field="description" style="font-size:.8rem;white-space:pre-wrap;line-height:1.55; color:${textColor}; opacity:0.85;">${e.description || ''}</p></div>`;
         },
 
         // --- Funciones de renderizado de secciones ---
@@ -2069,49 +2069,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const target = e.target;
             let sectionName = null;
-            let focusFieldName = null;
+            let focusFieldName = target.closest('[data-field]')?.dataset.field || null;
+            let itemId = null;
 
-            // 1. Detección por data-section-key explícito en el contenedor
-            const containerSection = target.closest('[data-section-key]')?.dataset.sectionKey;
-            if (containerSection) {
-                if (containerSection === 'summary') {
-                    sectionName = 'personal';
-                    focusFieldName = 'summary';
-                } else {
-                    sectionName = containerSection;
+            // 1. Detección Prioritaria por Avatar / Foto (incluso dentro de header)
+            if (target.closest('.avatar-container, [data-cv-avatar]') || (target.tagName === 'IMG' && !target.closest('[data-section-key="portfolio"]')) || target.closest('svg[viewBox]')) {
+                sectionName = 'avatar';
+            } 
+            // 2. Detección por Nombre Completo (H1)
+            else if (target.tagName === 'H1' || target.closest('h1')) {
+                sectionName = 'personal';
+                focusFieldName = 'firstName';
+            } 
+            // 3. Detección por Profesión / Título (H2)
+            else if (target.tagName === 'H2' || target.closest('h2')) {
+                sectionName = 'personal';
+                focusFieldName = 'title';
+            } 
+            // 4. Detección por Pie de página / Contacto Footer
+            else if (target.closest('footer')) {
+                sectionName = 'footer';
+            } 
+            // 5. Detección por data-section-key explícito en el contenedor o ítem
+            else {
+                const sectionEl = target.closest('[data-section-key]');
+                if (sectionEl) {
+                    const key = sectionEl.dataset.sectionKey;
+                    itemId = sectionEl.dataset.id;
+
+                    if (key === 'summary') {
+                        sectionName = 'personal';
+                        focusFieldName = 'summary';
+                    } else {
+                        sectionName = key;
+                    }
                 }
             }
 
-            // 2. Detección por elementos estructurales de cabecera / pie / avatar
+            // 6. Fallback Heurístico únicamente por Títulos de Sección (H3) o Header
             if (!sectionName) {
-                if (target.closest('.avatar-container, [data-cv-avatar]') && !target.closest('header, footer')) {
-                    sectionName = 'avatar';
-                } else if (target.tagName === 'H1' || target.closest('h1')) {
-                    sectionName = 'personal';
-                    focusFieldName = 'firstName';
-                } else if (target.tagName === 'H2' || target.closest('h2')) {
-                    sectionName = 'personal';
-                    focusFieldName = 'title';
-                } else if (target.closest('footer')) {
-                    sectionName = 'footer';
-                }
-            }
+                const titleText = (target.closest('h3')?.textContent || (target.tagName === 'H3' ? target.textContent : '')).toLowerCase();
 
-            // 3. Fallback Heurístico Robusto por Texto
-            if (!sectionName) {
-                const text = (target.closest('div, section, p, h3, h4, li')?.textContent || '').toLowerCase();
-
-                if (text.includes('educa') || text.includes('ingenier') || text.includes('universidad') || text.includes('sistemas') || text.includes('titul')) {
-                    sectionName = 'education';
-                } else if (text.includes('experien') || text.includes('desarrollador backend') || text.includes('tech solutions') || text.includes('senior')) {
-                    sectionName = 'experience';
-                } else if (text.includes('habilidad') || text.includes('skill') || text.includes('python') || text.includes('aws') || text.includes('docker') || text.includes('javascript')) {
-                    sectionName = 'skills';
-                } else if (text.includes('impacto') || text.includes('logro') || text.includes('consultas')) {
-                    sectionName = 'impacts';
-                } else if (text.includes('portafolio') || text.includes('portfolio') || text.includes('proyecto')) {
-                    sectionName = 'portfolio';
-                } else if (text.includes('resumen') || text.includes('perfil') || text.includes('backend')) {
+                if (titleText.includes('experien')) sectionName = 'experience';
+                else if (titleText.includes('educa')) sectionName = 'education';
+                else if (titleText.includes('habilidad') || titleText.includes('skill')) sectionName = 'skills';
+                else if (titleText.includes('impacto') || titleText.includes('logro')) sectionName = 'impacts';
+                else if (titleText.includes('portafolio') || titleText.includes('portfolio')) sectionName = 'portfolio';
+                else if (titleText.includes('resumen') || titleText.includes('perfil')) {
                     sectionName = 'personal';
                     focusFieldName = 'summary';
                 } else if (target.closest('header')) {
@@ -2124,9 +2128,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 setActiveSection(sectionName);
                 setTimeout(() => {
                     let input = null;
-                    if (focusFieldName) {
+                    // 1. Si el clic fue en un ítem específico (ej. educación o experiencia), buscar la casilla exacta de ese campo dentro de ese ítem
+                    if (itemId) {
+                        const itemEl = formWrapper.querySelector(`.item[data-id="${itemId}"]`);
+                        if (itemEl) {
+                            if (focusFieldName) {
+                                input = itemEl.querySelector(`[name="${focusFieldName}"]`);
+                            }
+                            if (!input) {
+                                input = itemEl.querySelector('input:not([type="hidden"]), textarea');
+                            }
+                        }
+                    }
+                    // 2. Si no hay ítem dinámico pero sí campo definido (ej. firstName, title, summary)
+                    if (!input && focusFieldName) {
                         input = formWrapper.querySelector(`[name="${focusFieldName}"]`);
                     }
+                    // 3. Fallback al primer input disponible de la sección
                     if (!input) {
                         input = formWrapper.querySelector('input:not([type="hidden"]), textarea');
                     }
