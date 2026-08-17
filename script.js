@@ -371,8 +371,16 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             return `<footer style="font-size:0.85rem; text-align:center; color:${finalOptions.color || data.textColorMuted}; background-color:${finalOptions.bgColor}; border-top:1px solid ${finalOptions.borderColor}; padding:${finalOptions.padding}; margin-top:auto; display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap: 1.5rem;">${data.footer.map(renderItem).join('')}</footer>`;
         },
-        renderExperienceItem: (e, data) => `<div style="margin-bottom:1.2rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.9rem;font-weight:600; color:${data.textColorDark};">${e.position || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${data.textColorMuted};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${data.textColorDark};">${e.company || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.5; color:${data.textColorDark};">${e.description || ''}</p></div>`,
-        renderEducationItem: (e, data) => `<div style="margin-bottom:1rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.9rem;font-weight:600; color:${data.textColorDark};">${e.degree || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${data.textColorMuted};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${data.textColorDark};">${e.institution || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.5; color:${data.textColorDark};">${e.description || ''}</p></div>`,
+        renderExperienceItem: (e, data, textColorOverride = null, mutedColorOverride = null) => {
+            const textColor = textColorOverride || data.textColorDark || '#212529';
+            const mutedColor = mutedColorOverride || data.textColorMuted || '#6c757d';
+            return `<div style="margin-bottom:1.2rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.95rem;font-weight:600; color:${textColor};">${e.position || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${mutedColor};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${textColor}; opacity:0.9;">${e.company || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.55; color:${textColor}; opacity:0.85;">${e.description || ''}</p></div>`;
+        },
+        renderEducationItem: (e, data, textColorOverride = null, mutedColorOverride = null) => {
+            const textColor = textColorOverride || data.textColorDark || '#212529';
+            const mutedColor = mutedColorOverride || data.textColorMuted || '#6c757d';
+            return `<div style="margin-bottom:1rem"><div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="font-size:.95rem;font-weight:600; color:${textColor};">${e.degree || ''}</h4><p style="font-size:.75rem;font-weight:500;color:${mutedColor};white-space:nowrap;margin-left:1rem">${templateHelpers.formatExperienceDate(e.startDate, e.endDate, e.current)}</p></div><p style="font-size:.85rem;font-style:italic;margin-bottom:.3rem; color:${textColor}; opacity:0.9;">${e.institution || ''}</p><p style="font-size:.8rem;white-space:pre-wrap;line-height:1.55; color:${textColor}; opacity:0.85;">${e.description || ''}</p></div>`;
+        },
 
         // --- Funciones de renderizado de secciones ---
         renderGenericSection: (title, items, renderItemFn, color, style = '') => {
@@ -381,37 +389,42 @@ document.addEventListener('DOMContentLoaded', () => {
             return `<div style="margin-top:1.5rem; ${style}"><h3 data-cv-color="sectionTitleColor" style="font-family: var(--font-heading); font-size:1rem; font-weight:600; color:${titleColor}; border-bottom:2px solid ${titleColor}; padding-bottom:.25rem; margin-bottom:1rem; display:inline-block; text-transform: uppercase;">${title}</h3>${items.map(renderItemFn).join('')}</div>`;
         },
         renderOrderedSections: (data, layoutName = '') => {
+            const darkLayouts = ['minimalist-dark', 'midnight', 'tech-lead', 'visionary'];
+            const isDark = darkLayouts.includes(layoutName);
+            const textColor = isDark ? (data.textColorLight || '#ffffff') : (data.textColorDark || '#212529');
+            const mutedColor = isDark ? '#adb5bd' : (data.textColorMuted || '#6c757d');
+            const titleColor = data.sectionTitleColor || (isDark ? '#ff5f56' : data.themeColor);
+
             const sectionRenderers = {
-                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{ text: data.personalInfo.summary }] : [], item => `<p data-cv-color="textColorDark" style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${data.textColorDark};">${item.text}</p>`, opts.color || data.themeColor, opts.style),
-                experience: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Experiencia', data.experience, e => templateHelpers.renderExperienceItem(e, data), opts.color || data.themeColor, opts.style), // renderExperienceItem has its own color logic
-                education: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Educación', data.education, e => templateHelpers.renderEducationItem(e, data), opts.color || data.themeColor, opts.style), // renderEducationItem has its own color logic
+                summary: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Resumen', data.personalInfo.summary ? [{ text: data.personalInfo.summary }] : [], item => `<p data-cv-color="textColorDark" style="font-size:.85rem;line-height:1.6;white-space:pre-wrap; color:${textColor};">${item.text}</p>`, opts.color || titleColor, opts.style),
+                experience: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Experiencia', data.experience, e => templateHelpers.renderExperienceItem(e, data, textColor, mutedColor), opts.color || titleColor, opts.style),
+                education: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Educación', data.education, e => templateHelpers.renderEducationItem(e, data, textColor, mutedColor), opts.color || titleColor, opts.style),
                 skills: (opts = {}) => {
                     let content;
                     if (layoutName === 'academic') {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li>${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || data.textColorDark).replace('<div', '<ul').replace('</div>', '</ul>');
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades Clave', data.skills, s => `<li style="color:${textColor};">${s.name} (${templateHelpers.levelLabels[s.level]})</li>`, opts.color || titleColor).replace('<div', '<ul').replace('</div>', '</ul>');
                     } else if (layoutName === 'executive' || layoutName === 'creative') {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<span style="display:inline-block; background-color:#f1f1f1; color:${data.textColorDark}; padding: 0.3rem 0.8rem; border-radius: 4px; margin: 0.2rem; font-size:0.85rem;">${s.name}</span>`, opts.color || data.themeColor);
-                    } else if (layoutName === 'technical') {
-                        content = templateHelpers.renderGenericSection(opts.title || '// SKILLS', data.skills, s => `<span style="display:inline-block; border:1px solid ${data.themeColor}; color:${data.themeColor}; padding: 0.2rem 0.6rem; border-radius: 4px; margin: 0.2rem; font-size:0.8rem;">${s.name}</span>`, opts.color || data.themeColor);
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<span style="display:inline-block; background-color:${isDark ? '#222' : '#f1f1f1'}; color:${textColor}; padding: 0.3rem 0.8rem; border-radius: 4px; margin: 0.2rem; font-size:0.85rem;">${s.name}</span>`, opts.color || titleColor);
+                    } else if (layoutName === 'technical' || layoutName === 'tech-lead') {
+                        content = templateHelpers.renderGenericSection(opts.title || '// SKILLS', data.skills, s => `<span style="display:inline-block; border:1px solid ${data.themeColor}; color:${data.themeColor}; padding: 0.2rem 0.6rem; border-radius: 4px; margin: 0.2rem; font-size:0.8rem;">${s.name}</span>`, opts.color || titleColor);
                     } else {
-                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p data-cv-color="textColorDark" style="font-size:0.8rem;margin-bottom:.4rem; color:${data.textColorDark};">${s.name}<span data-cv-color="textColorMuted" style="font-size:.7rem;opacity:.8"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || data.themeColor);
+                        content = templateHelpers.renderGenericSection(opts.title || 'Habilidades', data.skills, s => `<p data-cv-color="textColorDark" style="font-size:0.8rem;margin-bottom:.4rem; color:${textColor};">${s.name}<span data-cv-color="textColorMuted" style="font-size:.7rem;opacity:.8; color:${mutedColor};"> (${templateHelpers.levelLabels[s.level]})</span></p>`, opts.color || titleColor);
                     }
                     return content;
                 },
-                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-cv-color="textColorDark" style="background:#f4f4f4; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${data.textColorDark};">${item.description}</div>`, opts.color || data.themeColor, opts.style),
-                portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid #eee;"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${data.textColorDark};">${item.title}</p></div>`, opts.color || data.themeColor, opts.style || 'column-count:3; column-gap:1rem;')
+                impacts: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Impacto Clave', data.impacts, item => `<div data-cv-color="textColorDark" style="background:${isDark ? '#222' : '#f4f4f4'}; padding:0.8rem; border-left:4px solid ${data.themeColor}; margin-bottom:0.8rem; font-size:0.85rem; color:${textColor};">${item.description}</div>`, opts.color || titleColor, opts.style),
+                portfolio: (opts = {}) => templateHelpers.renderGenericSection(opts.title || 'Portafolio', data.portfolio, item => `<div style="break-inside: avoid; margin-bottom: 1rem;"><img src="${item.img || 'https://via.placeholder.com/300x200/e9ecef/6c757d?text=Imagen'}" style="width:100%; height:auto; display:block; border-radius:4px; border: 1px solid ${isDark ? '#333' : '#eee'};"/><p style="font-size:0.8rem; text-align:center; margin-top:0.5rem; font-weight:500; color:${textColor};">${item.title}</p></div>`, opts.color || titleColor, opts.style || 'column-count:3; column-gap:1rem;')
             };
 
             return [
                 ...data.sectionOrder
                     .map(key => sectionRenderers[key] ? sectionRenderers[key]() : ''),
-                // Secciones personalizadas añadidas por el usuario (se adaptan a cada plantilla)
                 ...(data.customSections || []).map(cs =>
                     templateHelpers.renderGenericSection(
                         cs.title || 'NUEVA SECCIÓN',
                         [{ text: cs.content || '' }],
-                        item => `<p style="font-size:.85rem; line-height:1.65; color:${data.textColorDark}; white-space:pre-wrap;">${item.text}</p>`,
-                        data.themeColor
+                        item => `<p style="font-size:.85rem; line-height:1.65; color:${textColor}; white-space:pre-wrap;">${item.text}</p>`,
+                        titleColor
                     )
                 )
             ].join('');
