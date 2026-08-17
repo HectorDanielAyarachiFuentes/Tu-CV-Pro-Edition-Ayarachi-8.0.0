@@ -1,9 +1,8 @@
-# 🚨 ALERTA CRÍTICA PARA IA 🚨
-**SI MODIFICAS LA ESTRUCTURA, ARCHIVOS O LÓGICA PRINCIPAL DEL PROYECTO, DEBES ACTUALIZAR ESTE DOCUMENTO INMEDIATAMENTE.** Este archivo es la fuente de verdad para entender el proyecto y ahorrar tokens. Lee esto antes de cualquier otra cosa.
-
+---
+description: Reglas de arquitectura, estructura del proyecto y directrices de modificación para Tu-CV-Pro-Edition.
 ---
 
-# 🧠 Guía de Arquitectura (Tu-CV-Pro-Edition)
+# Guía de Arquitectura (Tu-CV-Pro-Edition)
 
 Este proyecto es un generador/editor de currículums (CV). Está construido con HTML, CSS vainilla y JavaScript modular, optimizado para rendimiento.
 
@@ -41,9 +40,8 @@ Este proyecto es un generador/editor de currículums (CV). Está construido con 
 ### 🖼️ `assets/`
 - Recursos estáticos (imágenes, logos).
 
-## 🛠️ Reglas de Modificación
-1. **Separación de Intereses**: Lógica UI en `uiUtils.js`, estado en `state.js`, formularios en `formRenderers.js`.
-2. **CSS Modulares**: No mezcles estilos. Usa variables de `base.css`.
-3. **Eficiencia**: Mantén código limpio, no repitas código.
-
-**Fin de la guía.** Ve al grano.
+## 🛠️ Reglas de Modificación (CRÍTICO)
+1. **Separación de Intereses**: Mantén la lógica UI en `uiUtils.js`, el estado en `state.js`, y el renderizado en `formRenderers.js`.
+2. **CSS Modulares**: No mezcles estilos ni crees estilos globales fuera de `base.css`. Usa siempre las variables definidas en `base.css`.
+3. **Eficiencia**: Mantén el código limpio, optimizado para tokens y no repitas código.
+4. **Mantenimiento de esta regla**: Si modificas la estructura principal de carpetas o archivos, DEBES actualizar este archivo de reglas (`.agents/rules/architecture.md`) inmediatamente.
