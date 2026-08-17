@@ -1744,7 +1744,15 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             selectIcon: () => { cvData.avatar = { type: 'icon', value: button.dataset.iconPath }; },
             removePhoto: () => { cvData.avatar = { type: 'photo', value: '' }; },
-            selectLayout: () => { cvData.layout = button.dataset.layout; },
+            selectLayout: (btn) => {
+                cvData.layout = btn.dataset.layout;
+                const selector = btn.closest('.layout-selector');
+                if (selector) {
+                    selector.querySelectorAll('.layout-card').forEach(card => {
+                        card.classList.toggle('active', card === btn);
+                    });
+                }
+            },
             selectColor: () => { cvData.themeColor = button.dataset.colorValue; },
             selectPalette: () => {
                 const palette = colorPalettes[button.dataset.paletteIndex];
@@ -1777,10 +1785,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Las acciones de cambio de pestaña solo modifican la UI, no los datos.
             const isUiOnlyAction = action.toLowerCase().includes('tab') || action === 'switchBgTarget';
 
-            // Solo se vuelve a renderizar el formulario si la acción NO fue un cambio de pestaña (ej. para 'delete').
+            // Solo se vuelve a renderizar el formulario si la acción NO fue un cambio de pestaña y NO fue selección de plantilla
             if (section && !isUiOnlyAction) {
-                // For design, we always re-render to show updated color pickers/previews
-                if (section === 'design' || action === 'delete') {
+                if ((section === 'design' && action !== 'selectLayout') || action === 'delete') {
                     setActiveSection(section);
                 }
             }
